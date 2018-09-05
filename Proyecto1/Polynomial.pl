@@ -2,7 +2,7 @@
 % operaciones
 % Autores: Amanda Velasco y Octavio Ordaz
 
-%Definición de un polinomio
+%DefiniciÃ³n de un polinomio
 %poly(coef,exp).
 
 %-----------------Funciones auxiliares--------------------
@@ -18,7 +18,7 @@ ceros(0,N1,[0|L]):-
     ceros(0,N,L).
 %---------------------------------------------------------
 
-%Creación de un polinomio
+%CreaciÃ³n de un polinomio
 poly(C,E,P):-
     ceros(0,E,Z),
     combina(Z,[C],P).
@@ -58,22 +58,24 @@ mult([P1H|P1T],P2,Res):-
     escalar(P2,P1H,Aux),
     suma([0|Temp],Aux,Res).
 
-%Evaluación de un polinomio P en un valor x
+%EvaluaciÃ³n de un polinomio P en un valor x
 evalua([],_,0):-!.
 evalua([PH|PT],X,Res):-
         evalua(PT,X,Resul),
         Res is PH+X*Resul.
 
 %Derivada de un polinomio
-deriv(P,Res):-
-    grado(P,G),
-    deriv(P,G,Res).
+deriv([_|PT],Res):-
+    grado([_|PT],G),
+    %GN is G-1,
+    %ceros(0,GN,Res),
+    deriv([_|PT],G,Res).
 deriv([],_,[]):-!.
 deriv(_,0,0):-!.
 deriv([PH|PT],G,[ResH|ResT]):-
-    deriv(PT,GN,ResT),
-    ResH is G*PH,
-    GN is G-1.
+    GN is G-1,
+    ResH = PH*G,
+    deriv(PT,GN,ResT).
 
 
 
