@@ -1,0 +1,260 @@
+%Programa para manejar distintas operaciones en polinomios monovariados
+%Autores: Amanda Velasco (154415) y Octavio Ordaz (158525)
+%Fecha: 6 de septiembre de 2018
+
+%-----------------Funcionalidad auxiliar--------------------
+%Combina dos listas
+/*
+Toma la cabeza de la primera lista y la guarda hasta que la lista queda
+vacia. Una vez que esto sucede, copia la segunda lista en una tercera
+lista y le añade los elementos guardados, combinando asi dos listas en
+una.
+*/
+combina([],Y,Y):-!.
+combina([X|Resto],Y,[X|Nueva]):-
+    combina(Resto,Y,Nueva).
+
+%Crea una lista de N ceros
+/*
+Va poniendo ceros a la cabeza de una lista hasta que el contador N
+llegue a cero.
+*/
+ceros(_,0,[]):-!.
+ceros(0,N,[0|Resto]):-
+    N > 0,
+    Dec is N-1,
+    ceros(0,Dec,Resto).
+
+%Invierte el orden de una lista
+/*
+Toma la cabeza de una lista y guarda el elemento, una vez que la lista
+queda vacia añade en orden inverso (los pone en la cola) dentro de una
+lista que sirve como resultado.
+*/
+invierte(X,Res):-
+    invierte(X,[],Res).
+invierte([],Y,Y):-!.
+invierte([XH|XT],Y,Res):-
+    invierte(XT,[XH|Y],Res).
+
+%Multiplicacion de elementos de una lista por un escalar
+/*
+Toma uno a uno los elementos que conforman la lista y los multiplica
+por el escalar dado, el resultado lo guarda en una segunda lista que
+es la que regresa al usuario.
+*/
+escalar([],_,[]):-!.
+escalar([P1H|P1T],Esca,[ResH|ResT]):-
+    ResH is P1H*Esca,
+    escalar(P1T,Esca,ResT).
+%-----------------------------------------------------------
+
+%------------Funcionalidad propia de polinomios-------------
+%Creación de un polinomio
+/*
+Crea una lista de E ceros donde E es el grado del polinomio.
+Despues combina esta lista con una que contiene al coeficiente
+con exponente E y entrega el resultado en una lista de forma
+[0,0,...,C] con C = coeficiente y posicion de C = E+1.
+*/
+poly(C,E,P):-
+    ceros(0,E,Z),
+    combina(Z,[C],P).
+
+%Grado de un polinomio
+/*
+Inicia un contador en -1 y lo va incrementando por cada coeficiente
+en el polinomio de entrada pues si el polinomio tiene n+1
+coeficientes significa que su grado es n.
+*/
+grado([],-1):-!.
+grado([_|Resto],G):-
+    grado(Resto,Grad),
+    G is Grad+1.
+
+%Suma de dos polinomios
+/*
+Dados dos polinomios toma la cabeza de cada una de las listas,
+y suma elemento a elemento para despues guardar el resultado en
+una tercera lista que es el resultado.
+*/
+suma(P1T,[],P1T):-!.
+suma([],P2T,P2T):-!.
+suma([P1H|P1T], [P2H|P2T], [ResH|ResT]):-
+   ResH is P1H+P2H,
+   suma(P1T, P2T, ResT).
+
+%Resta de dos polinomios
+/*
+Dados dos polinomios, toma el sustraendo para multiplicarlo por
+un escalar con valor -1 y asi poder sumarlo con el minuendo,
+entregando como resultado la resta de los dos polinomios.
+*/
+resta(P1T,[],P1T):-!.
+resta([],P2T,Res):-
+    escalar(P2T,-1,Res).
+resta(P1,P2,Res):-
+    escalar(P2,-1,Aux),
+    suma(P1,Aux,Res).
+
+%Multiplicación de dos polinomios
+/*
+Dados dos polinomios, toma cada uno de los elementos del primero
+y efectua una multiplicacion por escalar con dicho elemento
+a lo largo del segundo polinomio para sumar el resultado en una lista
+y agregarlo a la lista respuesta.
+*/
+mult(_,[],[]):-!.
+mult([],_,[]):-!.
+mult([P1H|P1T],P2,Res):-
+    mult(P1T,P2,Temp),
+    escalar(P2,P1H,Aux),
+    suma([0|Temp],Aux,Res).
+
+%Composición de dos polinomios P1(P2(x))
+/*
+Crea un polinomio de grado 0 con coeficiente = cabeza de la lista.
+Multiplica el segundo polinomio por el resultado de la composicion
+del resto del primer polinomio con el segundo y lo suma al polinomio
+de grado 0 (usando regla de Horner).
+*/
+comp(_,[],[]):-!.
+comp([],_,[]):-!.
+comp([P1H|P1T],P2,Res):-
+    comp(P1T,P2,Temp),
+    poly(P1H,0,P),
+    mult(P2,Temp,M),
+    suma(P,M,Res).
+
+
+%Evaluación de un polinomio en un valor x
+/*
+Utiliza la regla de Horner para calcular el valor del polinomio
+dada cierta X.
+*/
+evalua([],_,0):-!.
+evalua([PH|PT],X,Res):-
+        evalua(PT,X,Resul),
+        Res is PH+X*Resul.
+
+%Derivada de un polinomio
+/*
+Toma cada uno de los elementos del polinomio (la cabeza de la lista)
+para multiplicarlo por el exponente o grado de si mismo. Actualiza
+su grado restando uno.
+*/
+deriva([_|PT],[ResH|ResT]):-
+    deriva(PT,1,[ResH|ResT]).
+deriva([],_,[]):-!.
+deriva([PH|PT],G,[ResH|ResT]):-
+    ResH is PH*G,
+    Grado is G+1,
+    deriva(PT,Grado,ResT).
+
+%------------------Imprime polinomio------------------------
+%Funciones auxiliares:
+%Checa si el coeficiente es 0
+verificaCC(C):-
+    C == 0 -> write("");
+    !.
+%Checa si el coeficiente es positivo y si debe poner un "+"
+verificaCP(C,G,Fijo):-
+    ((G == Fijo,C\==1) -> write(C));
+    G == 0 -> !;
+    C > 1 -> write("+"),write(C);
+    !.
+%Checa si el coeficiente es negativo
+verificaCN(C,G,Fijo):-
+    G == Fijo -> !;
+    ((C == -1,G > 0) -> write("-"));
+    ((C < -1,G\==0) -> write(C));
+    !.
+%Checa el grado del coeficiente
+verificaG(C,G,Fijo):-
+    C == 0 -> !;
+    ((G == 0,G\==Fijo,C > 0) -> (write("+"),write(C)));
+    ((G == 0,G\==Fijo,C < 0) -> write(C));
+    ((G == 0,C == 1) -> write(C));
+    C == 1 -> write("+");
+    G == 1 -> write("x");
+    G > 0 -> write("x^"),write(G);
+    !.
+%Función que llama el usuario:
+/*
+Invierte el polinomio para poner en primer lugar (de izquierda
+a derecha) el grado mayor. Dependiendo del coeficiente y el exponente
+imprime los simbolos necesarios para leer el polinomio como
+expresion matematica.
+*/
+imprime(P):-
+    invierte(P,Pp),
+    grado(P,G),
+    imprime(Pp,G,G),
+    nl.
+imprime([],_,_):-!.
+imprime([PH|PT],G,Fijo):-
+    verificaCC(PH),
+    verificaCP(PH,G,Fijo),
+    verificaCN(PH,G,Fijo),
+    verificaG(PH,G,Fijo),
+    Gnvo is G-1,
+    imprime(PT,Gnvo,Fijo).
+%-----------------------------------------------------------
+%-----------------------------------------------------------
+
+%-----------------------Pruebas-----------------------------
+
+main:-
+    %Definimos el primer polinomio
+    poly(4,3,A), poly(3,2,B),
+    suma(A,B,C), poly(2,1,D),
+    suma(C,D,E), poly(1,0,F),
+    suma(E,F,P),
+    %Definimos el segundo polinomio
+    poly(3,2,G), poly(5,0,H),
+    suma(G,H,Q),
+
+    %Cero
+    ceros(0,1,Zero),
+    %Suma de P(x)+Q(x)
+    suma(P,Q,Suma),
+    %Multiplicacion de P(x)*Q(x)
+    mult(P,Q,Multi),
+    %Composicion de P(Q(x)))
+    comp(P,Q,Compo),
+    %Cambio de signo
+    resta(Zero,P,Minus),
+    %Evaluar en P(x) con x=3
+    evalua(P,3,Eval),
+    %Primera derivada de P(x) con respecto a x
+    deriva(P,D1),
+    %Segunda derivada de P(x) con respecto a x
+    deriva(D1,D2),
+
+    %Impresiones
+    write("zero(x)     = "),imprime(Zero),
+    write("p(x)        = "),imprime(P),
+    write("q(x)        = "),imprime(Q),
+    write("p(x) + q(x) = "),imprime(Suma),
+    write("p(x) * q(x) = "),imprime(Multi),
+    write("p(q(x))     = "),imprime(Compo),
+    write("0 - p(x)    = "),imprime(Minus),
+    write("p(3)        = "),write(Eval),nl,
+    write("p'(x)       = "),imprime(D1),
+    write("p''(x)      = "),imprime(D2), fail.
+
+%------------------Resultado esperado-----------------------
+/*
+zero(x)     = 0
+p(x)        = 4x^3 + 3x^2 + 2x + 1
+q(x)        = 3x^2 + 5
+p(x) + q(x) = 4x^3 + 6x^2 + 2x + 6
+p(x) * q(x) = 12x^5 + 9x^4 + 26x^3 + 18x^2 + 10x + 5
+p(q(x))     = 108x^6 + 567x^4 + 996x^2 + 586
+0 - p(x)    = -4x^3 - 3x^2 - 2x - 1
+p(3)        = 142
+p'(x)       = 12x^2 + 6x + 2
+p''(x)      = 24x + 6
+*/
+%-----------------------------------------------------------
+%-----------------------------------------------------------
