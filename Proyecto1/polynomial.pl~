@@ -80,13 +80,6 @@ evalua([PH|PT],X,Res):-
         Res is PH+X*Resul.
 
 %Derivada de un polinomio
-deriva([_|PT],[ResH|ResT]):-
-    deriva(PT,1,[ResH|ResT]).
-deriva([],_,[]):-!.
-deriva([PH|PT],G,[ResH|ResT]):-
-    ResH is PH*G,
-    Grado is G+1,
-    deriva(PT,Grado,ResT).
 /*
 deriv(P,Res):-
     grado(P,G),
@@ -100,6 +93,13 @@ deriv([PH|PT],G,[ResH|ResT]):-
     Gnvo is G-1,
     deriv(PT,Gnvo,ResT).
 */
+deriva([_|PT],[ResH|ResT]):-
+    deriva(PT,1,[ResH|ResT]).
+deriva([],_,[]):-!.
+deriva([PH|PT],G,[ResH|ResT]):-
+    ResH is PH*G,
+    Grado is G+1,
+    deriva(PT,Grado,ResT).
 
 
 %Imprime un polinomio
