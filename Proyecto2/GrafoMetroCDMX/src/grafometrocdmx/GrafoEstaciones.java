@@ -124,7 +124,7 @@ public class GrafoEstaciones {
             for(Vias hijo : subsecuentes){
                 if(visitados[hijo.getEstD().getId()] == 0){
                     double f = calculaF(actual, hijo.getEstD());
-                    //System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
+                    System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
                     if(f < menor){
                         menor = f;
                         nueva = hijo.getEstD();
