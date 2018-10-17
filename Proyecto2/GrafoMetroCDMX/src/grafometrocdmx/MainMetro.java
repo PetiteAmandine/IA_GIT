@@ -26,18 +26,18 @@ public class MainMetro {
         prueba.llenaLista();
         
         prueba.agregaVia(A, B, 20);
-        prueba.agregaVia(A, D, 23);
+        
         prueba.agregaVia(B, D, 2);
         prueba.agregaVia(B, C, 20);
         prueba.agregaVia(C, E, 15);
         
-        
         ArrayList<Estacion> camino = prueba.aEstrellaR(A, E);
+        /*
         for(Estacion est : camino){
             System.out.println(est.getNombre());
         }
-        
-        
+        */
+       
         //System.out.print(prueba.toString());
 
     }

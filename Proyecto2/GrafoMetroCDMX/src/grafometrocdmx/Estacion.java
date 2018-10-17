@@ -9,6 +9,7 @@ public class Estacion {
     private String nombre;
     private double latitud;
     private double longitud;
+    private double distAcum;
     private int id;
 
     public Estacion(){
@@ -19,6 +20,7 @@ public class Estacion {
         this.nombre = nombre;
         this.latitud = latitud;
         this.longitud = longitud;
+        this.distAcum = 0;
     }
 
     public String getNombre() {
@@ -43,6 +45,14 @@ public class Estacion {
 
     public void setLongitud(double longitud) {
         this.longitud = longitud;
+    }
+    
+    public double getDistAcum() {
+        return distAcum;
+    }
+    
+    public void setDistAcum(double distAcum) {
+        this.distAcum = distAcum;
     }
     
     public int getId() {
