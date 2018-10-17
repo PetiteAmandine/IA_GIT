@@ -1,5 +1,7 @@
 package grafometrocdmx;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author super
@@ -29,7 +31,14 @@ public class MainMetro {
         prueba.agregaVia(B, C, 20);
         prueba.agregaVia(C, E, 15);
         
-        System.out.print(prueba.toString());
+        
+        ArrayList<Estacion> camino = prueba.aEstrellaR(A, E);
+        for(Estacion est : camino){
+            System.out.println(est.getNombre());
+        }
+        
+        
+        //System.out.print(prueba.toString());
 
     }
     

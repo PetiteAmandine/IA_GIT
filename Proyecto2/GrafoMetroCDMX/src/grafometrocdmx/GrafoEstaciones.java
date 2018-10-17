@@ -75,6 +75,73 @@ public class GrafoEstaciones {
         }
         return distVias;
     }
+    private boolean todosVisitados(){
+        for(int i = 0; i < visitados.length; i++){
+            if(visitados[i] == 0){
+                return false;
+            }
+        }
+        return true;
+    }
+    private double calculaF(Estacion actual, Estacion destino){
+        ArrayList<Vias> aux = lineas.get(actual.getId());
+        double f = 0;
+        for(int i = 0; i < aux.size(); i++){
+            if(aux.get(i).getEstD().equals(destino)){
+                f = aux.get(i).getDistancia() + distHaversine(actual,destino);
+                break;
+            }
+        }
+        return f;
+    }
+    public ArrayList<Estacion> aEstrellaR(Estacion actual, Estacion destino){
+        ArrayList<Estacion> path = new ArrayList<Estacion>();
+        aEstrellaR(actual, destino, new ArrayList<Estacion>(), path);
+        return path;
+    }
+    private void aEstrellaR(Estacion actual, Estacion destino, ArrayList<Estacion> openList, ArrayList<Estacion> closeList){
+        openList.add(actual);
+        visitados[actual.getId()] = 1;
+        if(actual.equals(destino)){
+            for (Estacion est : openList){
+                closeList.add(est);
+            }
+            return ;
+        }
+        if(todosVisitados() || openList.isEmpty()){
+            return ;
+        }
+        ArrayList<Vias> subsecuentes = lineas.get(actual.getId());
+        Estacion nueva = null;
+        double menor = Integer.MAX_VALUE;
+        for(Vias hijo : subsecuentes){
+            if(visitados[hijo.getEstD().getId()] == 0){
+                double f = calculaF(actual, hijo.getEstD());
+                if(f < menor){
+                    menor = f;
+                    nueva = hijo.getEstD();
+                }
+            }
+        }
+        if (nueva != null){
+            for (Estacion est:openList)
+                System.out.print(est.getNombre() + " --> ");
+            System.out.println("");
+            aEstrellaR(nueva, destino, openList, closeList);
+        }
+    }
+    /*
+    private double calculaF(Estacion actual, Estacion destino){
+        ArrayList<Vias> aux = lineas.get(actual.getId());
+        double f = 0;
+        for(int i = 0; i < aux.size(); i++){
+            if(aux.get(i).getEstD().equals(destino)){
+                f = aux.get(i).getDistancia() + distHaversine(actual,destino);
+                break;
+            }
+        }
+        return f;
+    }
     private Estacion menorF(Estacion actual, Estacion destino, double fIni){
         ArrayList<Vias> subsecuentes = lineas.get(actual.getId());
         Estacion menor = new Estacion();
@@ -94,12 +161,67 @@ public class GrafoEstaciones {
         double gAux = 0, hAux = 0, fAux = 0;
         //Añado el primer elemento a la lista abierta
         openList.add(origen);
+        //El primer nodo en la lista es el nodo actual, solo la primera vez
+        Estacion actual = openList.get(0);
         //Mientras la lista abierta no este vacia hay opciones por explorar
         while (!openList.isEmpty()) {
+            //Hace del nodo actual el que menor F tenga dentro de la lista abierta
+            double f = 0;
+            for(int i = 0; i < openList.size(); i++){
+                
+            }
+            //Actualiza el valor de F
+            fAux = calculaF(actual,destino);
+            //Elimina el nodo actual de la lista abierta
+            openList.remove(actual.getId());
+            //Añade el nodo actual a la lista cerrada
+            closeList.add(actual);
+            //Checa si el nodo actual no es el destino
+            if(actual.equals(destino)){
+                //Backtrack para encontrar el camino
+            }
+            //Busca los hijos del nodo actual
+            ArrayList<Vias> subsecuentes = lineas.get(actual.getId());
+            //Para cada hijo del nodo actual
+            for(int i = 0; i < subsecuentes.size(); i++){
+                //Revisa si no esta en la lista cerrada
+                if(closeList.contains(subsecuentes.get(i).getEstD())){
+                    //De estar se vuelve al incio del ciclo
+                    continue;
+                }
+                //Calcula los nuevos valores de f, g, h
+                gAux = subsecuentes.get(i).getDistancia();
+                hAux = distHaversine(subsecuentes.get(i).getEstD(),destino);
+                fAux = gAux + hAux;
+                //Revisa si no está dentro de la lista abierta
+                if(openList.contains(subsecuentes.get(i).getEstD())){
+                    //Bandera para identificar cuando un hijo tenga mayor G que el actual
+                    boolean bandera = false;
+                    //Obtiene la G del hijo actual
+                    double gHijo = subsecuentes.get(i).getDistancia();
+                    //Para todos los hijos del nodo actual
+                    for(int j = 0; j < subsecuentes.size(); j++){
+                        //Checa si el hijo actual es, de entre todos, el de mayor G
+                        if(gHijo > subsecuentes.get(j).getDistancia()){
+                            //Pone bandera en true
+                            bandera = true;
+                        }
+                    }
+                    //Si la bandera es verdadera
+                    if(bandera){
+                        //Continua al inicio del ciclo for, el sgiuiente hijo
+                        continue;
+                    }
+                }
+                //Añade el nodo actual a la lista abierta
+                openList.add(subsecuentes.get(i).getEstD());
+                
+            }
             
         }
         return closeList; //NO, SÓLO PARA QUITAR EL WARNING
     }
+    */
     
     public String toString() {
         ArrayList<Vias> temp;
