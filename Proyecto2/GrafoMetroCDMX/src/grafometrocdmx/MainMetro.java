@@ -26,17 +26,20 @@ public class MainMetro {
         prueba.llenaLista();
         
         prueba.agregaVia(A, B, 20);
-        
+        prueba.agregaVia(A, D, 23);
         prueba.agregaVia(B, D, 2);
         prueba.agregaVia(B, C, 20);
         prueba.agregaVia(C, E, 15);
         
-        ArrayList<Estacion> camino = prueba.aEstrellaR(A, E);
-        /*
-        for(Estacion est : camino){
-            System.out.println(est.getNombre());
+        ArrayList<Estacion> camino = prueba.aEstrellaR(A, B);
+        
+        if (camino.size() == 0)
+            System.out.println("No existe camino.");
+        else 
+            for(Estacion est : camino){
+                System.out.println(est.getNombre());
         }
-        */
+        
        
         //System.out.print(prueba.toString());
 

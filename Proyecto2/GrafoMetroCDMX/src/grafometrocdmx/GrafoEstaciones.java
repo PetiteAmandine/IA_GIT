@@ -94,15 +94,21 @@ public class GrafoEstaciones {
         }
         return f;
     }
+    private class Bandera {
+        boolean terminado;
+    }
     public ArrayList<Estacion> aEstrellaR(Estacion actual, Estacion destino){
         ArrayList<Estacion> path = new ArrayList<Estacion>();
-        aEstrellaR(actual, destino, new ArrayList<Estacion>(), path);
+        Bandera complete = new Bandera();
+        complete.terminado = false;
+        aEstrellaR(actual, destino, new ArrayList<Estacion>(), path, complete);
         return path;
     }
-    private void aEstrellaR(Estacion actual, Estacion destino, ArrayList<Estacion> openList, ArrayList<Estacion> closeList){
+    private void aEstrellaR(Estacion actual, Estacion destino, ArrayList<Estacion> openList, ArrayList<Estacion> closeList, Bandera complete){
         openList.add(actual);
         visitados[actual.getId()] = 1;
         if(actual.equals(destino)){
+            complete.terminado = true;
             for (Estacion est : openList){
                 closeList.add(est);
             }
@@ -111,33 +117,40 @@ public class GrafoEstaciones {
         if(todosVisitados() || openList.isEmpty()){
             return ;
         }
-        ArrayList<Vias> subsecuentes = lineas.get(actual.getId());
-        Estacion nueva = null;
-        double menor = Integer.MAX_VALUE;
-        for(Vias hijo : subsecuentes){
-            if(visitados[hijo.getEstD().getId()] == 0){
-                double f = calculaF(actual, hijo.getEstD());
-                System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
-                if(f < menor){
-                    menor = f;
-                    nueva = hijo.getEstD();
+        while (complete.terminado == false) {
+            ArrayList<Vias> subsecuentes = lineas.get(actual.getId());
+            Estacion nueva = null;
+            double menor = Integer.MAX_VALUE;
+            for(Vias hijo : subsecuentes){
+                if(visitados[hijo.getEstD().getId()] == 0){
+                    double f = calculaF(actual, hijo.getEstD());
+                    //System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
+                    if(f < menor){
+                        menor = f;
+                        nueva = hijo.getEstD();
+                    }
                 }
             }
-        }
-        if (nueva != null){
-            for (Estacion est:openList){
-                System.out.print(est.getNombre()+":"+est.getDistAcum()+ " --> ");
-            }
-            System.out.println("");
-            for (Vias via : subsecuentes){
-                if(via.getEstD().equals(nueva)){
-                    nueva.setDistAcum(actual.getDistAcum() + via.getDistancia());
-                    break;
+            if (nueva != null){
+                /*for (Estacion est:openList){
+                    System.out.print(est.getNombre()+":"+est.getDistAcum()+ " --> ");
                 }
+                System.out.println("");*/
+                for (Vias via : subsecuentes){
+                    if(via.getEstD().equals(nueva)){
+                        nueva.setDistAcum(actual.getDistAcum() + via.getDistancia());
+                        break;
+                    }
+                }
+                aEstrellaR(nueva, destino, openList, closeList, complete);
             }
-            aEstrellaR(nueva, destino, openList, closeList);
+            else {
+                openList.remove(openList.size()-1);
+                return;
+            }
         }
     }
+    
     /*
     private double calculaF(Estacion actual, Estacion destino){
         ArrayList<Vias> aux = lineas.get(actual.getId());
