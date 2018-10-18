@@ -48,10 +48,18 @@ public class MainMetro {
                 String[] datos = fila.split(",");
                 actualAux = new Estacion(datos[2],Double.parseDouble(datos[3]),Double.parseDouble(datos[4]));
                 if(distanciaAux != -1 && destinoAux != null){
-                    actualAux = estArr[metroCDMX.buscaEstacion(actualAux)];
-                    destinoAux = estArr[metroCDMX.buscaEstacion(destinoAux)];
-                    metroCDMX.agregaVia(actualAux, destinoAux, distanciaAux);
+                    int index1 = metroCDMX.buscaEstacion(actualAux);
+                    int index2 = metroCDMX.buscaEstacion(destinoAux);
+                    if (index1 != -1 && index2 != -1 && index1 != index2){
+                        actualAux = estArr[metroCDMX.buscaEstacion(actualAux)];
+                        destinoAux = estArr[metroCDMX.buscaEstacion(destinoAux)];
+                        metroCDMX.agregaVia(actualAux, destinoAux, distanciaAux);
                     //System.out.println(actualAux.getNombre()+"-->"+destinoAux.getNombre()+": "+distanciaAux);
+                    }
+                    else {
+                        System.out.println("NO SE PUEDE CREAR VÍA");
+                        break;
+                    }
                 }
                 distanciaAux = Integer.parseInt(datos[5]);
                 destinoAux = actualAux;
@@ -67,12 +75,22 @@ public class MainMetro {
         Scanner sc = new Scanner(System.in);
         System.out.println("Ingresa el id de la estación origen: ");
         int idOri = sc.nextInt();
+        while (idOri >= estaciones.size()) {
+            System.out.println("Id no encontrado");
+            System.out.println("Ingresa el id de la estación origen: ");
+            idOri = sc.nextInt();
+        }
         System.out.println("Ingresa el id de la estación destino: ");
         int idDest = sc.nextInt();
+        while (idDest >= estaciones.size()) {
+            System.out.println("Id no encontrado");
+            System.out.println("Ingresa el id de la estación destino: ");
+            idDest = sc.nextInt();
+        }
                 
         Estacion origen = estArr[idOri];
         Estacion destino = estArr[idDest];
-        ArrayList<Estacion> camino = metroCDMX.aEstrellaR(origen, destino);
+        ArrayList<Estacion> camino = metroCDMX.aEstrellaGeo(origen, destino);
         System.out.println("");
         System.out.println("El camino por recorrer es: ");
         if (camino.isEmpty()){

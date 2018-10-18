@@ -1,5 +1,11 @@
 package grafometrocdmx;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 /**
  *
@@ -9,23 +15,18 @@ public class GrafoEstaciones {
     
     private ArrayList<ArrayList<Vias>> lineas;
     private Estacion[] estaciones;
-    private int[] visitados;
+    private HashSet<Estacion> visitados;
     private int numEst;
     private int tamMax;
     
     public GrafoEstaciones(int tam){
         lineas = new ArrayList<ArrayList<Vias>>();
         estaciones = new Estacion[tam];
-        visitados = new int[tam];
         numEst = 0; 
         tamMax = tam;
-        inicializaVisitados();
+        visitados = new HashSet<Estacion>();
     }
-    private void inicializaVisitados(){
-        for(int i = 0; i < visitados.length; i++){
-            visitados[i] = 0;
-        }
-    }
+
     
     public int buscaEstacion(Estacion aux){
         int clave = -1;
@@ -92,6 +93,25 @@ public class GrafoEstaciones {
         double d = 6371*c;
         return d*1000;
     }
+    private double distVias(Estacion est1, Estacion est2){
+        int idOri = est1.getId();
+        ArrayList<Vias> temp = lineas.get(idOri);
+        double distVias = 0;
+        for(int i = 0; i < temp.size(); i++){
+            if(est2.equals(temp.get(i).getEstD())){
+                distVias = temp.get(i).getDistancia();
+                break;
+            }
+        }
+        return distVias;
+    }
+    private Map<Estacion, Double> initializeAllToInfinity() {
+        Map<Estacion,Double> distances = new HashMap<>();
+        for(int i = 0; i < estaciones.length; i++){
+            distances.put(estaciones[i], Double.POSITIVE_INFINITY);
+        }
+        return distances;
+    }
     private double calculaF(Estacion actual, Estacion destino, Estacion destinoFinal){
         ArrayList<Vias> aux = lineas.get(actual.getId());
         double f = 0, g = 0, h = 0;
@@ -107,6 +127,65 @@ public class GrafoEstaciones {
         }
         return f;
     }
+    private PriorityQueue<Estacion> initQueue() {
+        return new PriorityQueue<>(10, new Comparator<Estacion>() {
+            public int compare(Estacion x, Estacion y) {
+                if (x.getCostoTotal()< y.getCostoTotal()) {                   
+                    return -1;              
+                }              
+                if (x.getCostoTotal()> y.getCostoTotal()) {
+                    return 1;
+                }
+                return 0;
+            };
+        });
+    }
+    private ArrayList<Estacion> obtieneCamino(HashMap<Estacion,Estacion> padres, Estacion origen, Estacion destino){
+        ArrayList<Estacion> camino = new ArrayList<Estacion>();
+        Estacion actual = destino;
+        while(!actual.equals(origen)){
+            camino.add(0,actual);
+            actual = padres.get(actual);
+        }
+        camino.add(0,actual);
+        return camino;
+    }
+    public ArrayList<Estacion> aEstrellaGeo(Estacion origen, Estacion destino){
+        HashMap<Estacion,Estacion> padres = new HashMap<Estacion,Estacion>();
+        Map<Estacion, Double> efes = initializeAllToInfinity();
+        Queue<Estacion> colaP = initQueue();
+        
+        efes.put(origen, origen.getCostoTotal());
+        colaP.add(origen);
+        while(!colaP.isEmpty()){
+            Estacion actual = colaP.poll();
+            if(!visitados.contains(actual)){
+                visitados.add(actual);
+                if(actual.equals(destino)){
+                    ArrayList<Estacion> camino = obtieneCamino(padres, origen, destino);
+                    return camino;
+                }
+                ArrayList<Vias> subsecuentes = lineas.get(actual.getId());
+                for(Vias elemento : subsecuentes){
+                    if(!visitados.contains(elemento.getEstD())){
+                        double h = distHaversine(elemento.getEstD(),destino);
+                        double gInc = distVias(actual,elemento.getEstD());
+                        double g = gInc + elemento.getEstD().getDistAcum();
+                        double f = g + h;
+                        if(f < efes.get(elemento.getEstD())){
+                            efes.put(elemento.getEstD(), f);
+                            elemento.getEstD().setCostoTotal(f);
+                            padres.put(elemento.getEstD(), actual);
+                            colaP.add(elemento.getEstD());
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+        
+    }
+    /*
     private class Bandera {
         boolean terminado;
     }
@@ -145,10 +224,10 @@ public class GrafoEstaciones {
                 }
             }
             if (nueva != null){
-                /*for (Estacion est:openList){
-                    System.out.print(est.getNombre()+":"+est.getDistAcum()+ " --> ");
-                }
-                System.out.println("");*/
+                //for (Estacion est:openList){
+                //    System.out.print(est.getNombre()+":"+est.getDistAcum()+ " --> ");
+                //}
+                //System.out.println("");
                 for (Vias via : subsecuentes){
                     if(via.getEstD().equals(nueva)){
                         nueva.setDistAcum(actual.getDistAcum() + via.getDistancia());
@@ -163,6 +242,7 @@ public class GrafoEstaciones {
             }
         }
     }
+    */
     
     public String idNom(){
         StringBuilder res = new StringBuilder();
