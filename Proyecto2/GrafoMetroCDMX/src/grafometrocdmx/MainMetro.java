@@ -47,13 +47,13 @@ public class MainMetro {
             while((fila = br.readLine()) != null){
                 String[] datos = fila.split(",");
                 actualAux = new Estacion(datos[2],Double.parseDouble(datos[3]),Double.parseDouble(datos[4]));
-                distanciaAux = Integer.parseInt(datos[5]);
                 if(distanciaAux != -1 && destinoAux != null){
                     actualAux = estArr[metroCDMX.buscaEstacion(actualAux)];
                     destinoAux = estArr[metroCDMX.buscaEstacion(destinoAux)];
                     metroCDMX.agregaVia(actualAux, destinoAux, distanciaAux);
-                    System.out.println(actualAux.getNombre()+"-->"+destinoAux.getNombre()+": "+distanciaAux);
+                    //System.out.println(actualAux.getNombre()+"-->"+destinoAux.getNombre()+": "+distanciaAux);
                 }
+                distanciaAux = Integer.parseInt(datos[5]);
                 destinoAux = actualAux;
             }
         }
@@ -61,8 +61,8 @@ public class MainMetro {
             System.out.println("ARCHIVO NO ENCONTRADO");
         }
                 
-        /*Estacion origen = arrEst[0];
-        Estacion destino = arrEst[37];
+        Estacion origen = estArr[0];
+        Estacion destino = estArr[37];
         ArrayList<Estacion> camino = metroCDMX.aEstrellaR(origen, destino);
         if (camino.size() == 0){
             System.out.println("No existe camino.");
@@ -71,7 +71,7 @@ public class MainMetro {
             for(Estacion path : camino){
                 System.out.println(path.getNombre());
             }
-        }*/
+        }
         
         //System.out.print(metroCDMX.toString());
         
