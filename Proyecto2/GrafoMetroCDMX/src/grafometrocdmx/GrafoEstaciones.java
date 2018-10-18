@@ -72,22 +72,36 @@ public class GrafoEstaciones {
         lineas.get(est2.getId()).add(nueva);
     }
    
+    private double haversin(double val){
+        return Math.pow(Math.sin(val/2), 2);
+    }
     private double distHaversine(Estacion actual, Estacion destino){
-        double c = Math.PI/180;
         double long1,long2,lat1,lat2;
         long1 = actual.getLongitud();
         long2 = destino.getLongitud();
         lat1 = actual.getLatitud();
         lat2 = destino.getLatitud();
-        double d = (2*6367.45*Math.asin(Math.sqrt(Math.pow(Math.sin(c*(lat2-lat1)/2),2)+Math.cos(c*lat1)*Math.cos(c*lat2)*Math.pow(Math.sin(c*(long2-long1)/2),2))));
+        //double c = Math.PI/180;
+        //double d = (2*6367.45*Math.asin(Math.sqrt(Math.pow(Math.sin(c*(lat2-lat1)/2),2)+Math.cos(c*lat1)*Math.cos(c*lat2)*Math.pow(Math.sin(c*(long2-long1)/2),2))));
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLong = Math.toRadians(long2-long1);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+        double a = haversin(dLat)+Math.cos(lat1)*Math.cos(lat2)*haversin(dLong);
+        double c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double d = 6371*c;
         return d*1000;
     }
-    private double calculaF(Estacion actual, Estacion destino){
+    private double calculaF(Estacion actual, Estacion destino, Estacion destinoFinal){
         ArrayList<Vias> aux = lineas.get(actual.getId());
-        double f = 0;
+        double f = 0, g = 0, h = 0;
         for(int i = 0; i < aux.size(); i++){
+            g = actual.getDistAcum();   
             if(aux.get(i).getEstD().equals(destino)){
-                f = aux.get(i).getEstD().getDistAcum() + aux.get(i).getDistancia() + distHaversine(actual,destino);
+                g = g + aux.get(i).getDistancia();
+                h = distHaversine(destino,destinoFinal);
+                f = g + h;
+                //System.out.println(actual.getNombre()+"-->"+destino.getNombre()+": g="+g+", h="+h+" f="+f);
                 break;
             }
         }
@@ -122,8 +136,8 @@ public class GrafoEstaciones {
             double menor = Integer.MAX_VALUE;
             for(Vias hijo : subsecuentes){
                 if(visitados[hijo.getEstD().getId()] == 0){
-                    double f = calculaF(actual, hijo.getEstD());
-                    System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
+                    double f = calculaF(actual, hijo.getEstD(), destino);
+                    //System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
                     if(f < menor){
                         menor = f;
                         nueva = hijo.getEstD();
@@ -131,10 +145,10 @@ public class GrafoEstaciones {
                 }
             }
             if (nueva != null){
-                for (Estacion est:openList){
+                /*for (Estacion est:openList){
                     System.out.print(est.getNombre()+":"+est.getDistAcum()+ " --> ");
                 }
-                System.out.println("");
+                System.out.println("");*/
                 for (Vias via : subsecuentes){
                     if(via.getEstD().equals(nueva)){
                         nueva.setDistAcum(actual.getDistAcum() + via.getDistancia());

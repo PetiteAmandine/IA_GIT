@@ -83,8 +83,13 @@ public class Estacion {
         if (Double.doubleToLongBits(this.longitud) != Double.doubleToLongBits(other.longitud)) {
             return false;
         }
+        if (!Objects.equals(this.nombre, other.nombre)) {
+            return false;
+        }
         return true;
     }
+
+    
 
     @Override
     public String toString() {

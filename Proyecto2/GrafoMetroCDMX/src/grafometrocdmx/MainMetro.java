@@ -3,6 +3,7 @@ package grafometrocdmx;
 import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Scanner;
 
 /**
  *
@@ -38,7 +39,6 @@ public class MainMetro {
         }
         
         metroCDMX.llenaLista();
-        
         Estacion[] estArr = metroCDMX.getEstaciones();
         Estacion actualAux = null, destinoAux = null;
         int distanciaAux = 0;
@@ -60,10 +60,21 @@ public class MainMetro {
         catch(Exception e){
             System.out.println("ARCHIVO NO ENCONTRADO");
         }
+        
+        System.out.println("Todas las estaciones son: ");
+        System.out.println(metroCDMX.idNom());
+        
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Ingresa el id de la estación origen: ");
+        int idOri = sc.nextInt();
+        System.out.println("Ingresa el id de la estación destino: ");
+        int idDest = sc.nextInt();
                 
-        Estacion origen = estArr[0];
-        Estacion destino = estArr[15];
+        Estacion origen = estArr[idOri];
+        Estacion destino = estArr[idDest];
         ArrayList<Estacion> camino = metroCDMX.aEstrellaR(origen, destino);
+        System.out.println("");
+        System.out.println("El camino por recorrer es: ");
         if (camino.isEmpty()){
             System.out.println("No existe camino.");
         }
