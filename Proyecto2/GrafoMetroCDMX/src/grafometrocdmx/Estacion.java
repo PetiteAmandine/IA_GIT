@@ -1,5 +1,7 @@
 package grafometrocdmx;
 
+import java.util.Objects;
+
 /**
  *
  * @author super
@@ -75,7 +77,10 @@ public class Estacion {
             return false;
         }
         final Estacion other = (Estacion) obj;
-        if (this.id != other.id) {
+        if (Double.doubleToLongBits(this.latitud) != Double.doubleToLongBits(other.latitud)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.longitud) != Double.doubleToLongBits(other.longitud)) {
             return false;
         }
         return true;
