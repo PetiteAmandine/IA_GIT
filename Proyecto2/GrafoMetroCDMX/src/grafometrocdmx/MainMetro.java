@@ -62,9 +62,9 @@ public class MainMetro {
         }
                 
         Estacion origen = estArr[0];
-        Estacion destino = estArr[37];
+        Estacion destino = estArr[15];
         ArrayList<Estacion> camino = metroCDMX.aEstrellaR(origen, destino);
-        if (camino.size() == 0){
+        if (camino.isEmpty()){
             System.out.println("No existe camino.");
         }
         else {

@@ -71,7 +71,7 @@ public class GrafoEstaciones {
         nueva = new Vias(est1, distancia);
         lineas.get(est2.getId()).add(nueva);
     }
-    
+   
     private double distHaversine(Estacion actual, Estacion destino){
         double c = Math.PI/180;
         double long1,long2,lat1,lat2;
@@ -81,26 +81,6 @@ public class GrafoEstaciones {
         lat2 = destino.getLatitud();
         double d = (2*6367.45*Math.asin(Math.sqrt(Math.pow(Math.sin(c*(lat2-lat1)/2),2)+Math.cos(c*lat1)*Math.cos(c*lat2)*Math.pow(Math.sin(c*(long2-long1)/2),2))));
         return d*1000;
-    }
-    private double distVias(Estacion est1, Estacion est2){
-        int idOri = est1.getId();
-        ArrayList<Vias> temp = lineas.get(idOri);
-        double distVias = 0;
-        for(int i = 0; i < temp.size(); i++){
-            if(est2.equals(temp.get(i).getEstD())){
-                distVias = temp.get(i).getDistancia();
-                break;
-            }
-        }
-        return distVias;
-    }
-    private boolean todosVisitados(){
-        for(int i = 0; i < visitados.length; i++){
-            if(visitados[i] == 0){
-                return false;
-            }
-        }
-        return true;
     }
     private double calculaF(Estacion actual, Estacion destino){
         ArrayList<Vias> aux = lineas.get(actual.getId());
@@ -133,7 +113,7 @@ public class GrafoEstaciones {
             }
             return ;
         }
-        if(todosVisitados() || openList.isEmpty()){
+        if(openList.isEmpty()){
             return ;
         }
         while (complete.terminado == false) {
@@ -143,7 +123,7 @@ public class GrafoEstaciones {
             for(Vias hijo : subsecuentes){
                 if(visitados[hijo.getEstD().getId()] == 0){
                     double f = calculaF(actual, hijo.getEstD());
-                    //System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
+                    System.out.println(actual.getNombre()+"-->"+hijo.getEstD().getNombre()+":"+f);
                     if(f < menor){
                         menor = f;
                         nueva = hijo.getEstD();
@@ -151,10 +131,10 @@ public class GrafoEstaciones {
                 }
             }
             if (nueva != null){
-                /*for (Estacion est:openList){
+                for (Estacion est:openList){
                     System.out.print(est.getNombre()+":"+est.getDistAcum()+ " --> ");
                 }
-                System.out.println("");*/
+                System.out.println("");
                 for (Vias via : subsecuentes){
                     if(via.getEstD().equals(nueva)){
                         nueva.setDistAcum(actual.getDistAcum() + via.getDistancia());
