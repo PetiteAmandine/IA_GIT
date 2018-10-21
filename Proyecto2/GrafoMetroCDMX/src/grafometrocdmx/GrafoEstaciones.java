@@ -175,6 +175,8 @@ public class GrafoEstaciones {
                         if(f < efes.get(elemento.getEstD())){
                             efes.put(elemento.getEstD(), f);
                             elemento.getEstD().setCostoTotal(f);
+                            elemento.getEstD().setDistAcum(g);
+                            //System.out.println(elemento.getEstD().getNombre()+": "+elemento.getEstD().getDistAcum());
                             padres.put(elemento.getEstD(), actual);
                             colaP.add(elemento.getEstD());
                         }

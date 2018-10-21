@@ -1,12 +1,11 @@
-%"Clase" Estacion
 :-dynamic estacion/1.
 :-dynamic estacion/5.
 :-dynamic via/3.
 :-dynamic f/2.
 :-dynamic papa/2.
 
-%estacion(nombre,latitud,longitud,distAcc,costoTot,id)
-
+%"Clase" Estacion
+%estacion(nombre,latitud,longitud,distAcc,costoTot)
 estacion(a).
 estacion(b).
 estacion(c).
@@ -17,6 +16,7 @@ estacion(b,0,2,0,0).
 estacion(c,0,4,0,0).
 estacion(d,1,1,0,0).
 estacion(e,1,3,0,0).
+
 %f(Est,Dist). mapea una estacion a un valor de f
 f(a,inf).
 f(b,inf).
@@ -24,7 +24,6 @@ f(c,inf).
 f(d,inf).
 f(e,inf).
 %papa(E1,E2) indica que se llego a E1 por E2
-
 
 %Obtiene datos de estacion
 obtieneDatosEst(E,XH):-
@@ -97,20 +96,52 @@ encuentraCostos([OpenListH|OpenListT],Aux,[CostosH|CostosT]):-
     getCostoTotal(OpenListH,CostosH),
     encuentraCostos(OpenListT,Aux,CostosT).
 %Obtiene la estacion con menor costo total
-costoMenor([CostosH|CostosT],[OpenListH|OpenListT],Menor,MEst):-
-    menor(CostosT,CostosH,OpenListT,OpenListH,Menor,MEst).
-menor([],Menor,[],MEst,Menor,MEst):-!.
-menor([CostosH|CostosT],Menor0,[OpenListH|OpenListT],OpenListH,Menor,MEst):-
-    Menor1 is min(CostosH,Menor0),
-    (Menor0 \== Menor1) -> Est1 is OpenListH,
-    menor(CostosT,Menor1,OpenListT,Est1,Menor,MEst).
+menorLista([HijosH|HijosT],Estacion):-
+    menorLista([HijosH|HijosT],inf,HijosH,Estacion).
+menorLista([],_,X,X):-!.
+menorLista([HijosH|HijosT],Menor,Actual,Estacion):-
+    getCostoTotal(HijosH,CostoAct),
+    CostoAct < Menor -> menorLista(HijosT,CostoAct,HijosH,Estacion);
+    menorLista(HijosT,Menor,Actual,Estacion).
+
 %A*
-aEstrella(Origen,Destino,Camino):-
+%trataSubsecuentes(Subsecuentes,Visitados,OpenListT,Candidatos)
+trataSubsecuentes([],_,Candidatos,Candidatos):-!.
+trataSubsecuentes([SubsecuentesH|SubsecuentesT],Visitados,OpenListT,Candidatos):-
+    not(member(SubsecuentesH,Visitados)),
+
+%aEstrellaGeo(Origen,Destino,OpenList,Camino)
+aEstrellaGeo(Origen,Destino,Camino):-
     getCostoTotal(Origen,CT),
     assert(f(Origen,CT)),
     OpenList = [Origen],
-    aEstrella(Origen,Destino,Camino,OpenList).
-aEstrella(_,_,_,[]):-!.
-aEstrella(Destino,Destino,_,_):-!.
-aEstrella(Origen,Destino,Camino,OpenList):-.
+    aEstrellaGeo(Origen,Destino,OpenList,[],Camino).
+aEstrellaGeo(_,_,[],_,[]):-!.
+aEstrellaGeo(_,Destino,[OpenListH|_],Visitados,Camino):-
+    not(member(OpenListH,Visitados)),
+    append(Visitados,OpenListH),
+    OpenListH == Destino,
+    append(Camino,OpenListH,Camino).
+aEstrellaGeo(Origen,Destino,[OpenListH|OpenListT],Visitados,Camino):-
+    not(member(OpenListH,Visitados)),
+    append(Visitados,OpenListH),
+    OpenListH \== Destino,
+    conexiones(OpenListH,Subsecuentes),
+    trataSubsecuentes(Subsecuentes,Visitados,OpenListT,Candidatos),
+    aEstrellaGeo(Origen,Destino,Candidatos,Visitados,Camino).
+
+%aEstrella(Origen,Destino,Seleccion,Candidatos,Camino)
+aEstrella(_,_,_,[],[]):-!.
+aEstrella(Origen,Destino,Seleccion,_,Camino):-
+    conexiones(Origen,Hijos),
+    menorLista(Hijos,Estacion),
+    Estacion == Destino,
+    append(Seleccion,Destino,Camino).
+aEstrella(Origen,Destino,Seleccion,Candidatos,Camino):-
+    conexiones(Origen,Hijos),
+    menorLista(Hijos,Estacion),
+    Estacion \== Destino,
+    append(Seleccion,Estacion,L1),
+    delete(Candidatos,Estacion,L2),
+    aEstrella(Estacion,Destino,L1,L2,Camino).
 

@@ -12,6 +12,7 @@ public class Estacion {
     private double latitud;
     private double longitud;
     private double distAcum;
+    private double costoTotal;
     private int id;
 
     public Estacion(){
@@ -23,6 +24,7 @@ public class Estacion {
         this.latitud = latitud;
         this.longitud = longitud;
         this.distAcum = 0;
+        this.costoTotal = 0;
     }
 
     public String getNombre() {
@@ -65,6 +67,14 @@ public class Estacion {
         this.id = id;
     }
 
+    public double getCostoTotal() {
+        return costoTotal;
+    }
+
+    public void setCostoTotal(double costoTotal) {
+        this.costoTotal = costoTotal;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -88,8 +98,6 @@ public class Estacion {
         }
         return true;
     }
-
-    
 
     @Override
     public String toString() {
