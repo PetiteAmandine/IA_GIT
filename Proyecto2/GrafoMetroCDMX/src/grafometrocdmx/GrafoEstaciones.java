@@ -170,13 +170,13 @@ public class GrafoEstaciones {
                     if(!visitados.contains(elemento.getEstD())){
                         double h = distHaversine(elemento.getEstD(),destino);
                         double gInc = distVias(actual,elemento.getEstD());
-                        double g = gInc + elemento.getEstD().getDistAcum();
+                        double g = gInc + actual.getDistAcum();
                         double f = g + h;
                         if(f < efes.get(elemento.getEstD())){
                             efes.put(elemento.getEstD(), f);
                             elemento.getEstD().setCostoTotal(f);
                             elemento.getEstD().setDistAcum(g);
-                            //System.out.println(elemento.getEstD().getNombre()+": "+elemento.getEstD().getDistAcum());
+                            System.out.println(elemento.getEstD().getNombre()+": "+elemento.getEstD().getDistAcum());
                             padres.put(elemento.getEstD(), actual);
                             colaP.add(elemento.getEstD());
                         }

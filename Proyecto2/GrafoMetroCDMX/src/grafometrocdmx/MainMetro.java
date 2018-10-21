@@ -13,7 +13,7 @@ public class MainMetro {
 
     public static void main(String[] args) {
         
-        String csvFile = "lineasmetro.csv";
+        /*String csvFile = "lineasmetro.csv";
         BufferedReader br;
         String fila;
         ArrayList<Estacion> estaciones = new ArrayList<Estacion>(); 
@@ -102,9 +102,9 @@ public class MainMetro {
             }
         }
         
-        //System.out.print(metroCDMX.toString());
+        //System.out.print(metroCDMX.toString());*/
         
-        /*
+        
         //PRUEBA1
         Estacion A = new Estacion("A",0,0);
         Estacion B = new Estacion("B",0,2);
@@ -127,7 +127,19 @@ public class MainMetro {
         prueba.agregaVia(B, D, 2);
         prueba.agregaVia(B, C, 20);
         prueba.agregaVia(C, E, 15);
-        */
+        
+        ArrayList<Estacion> camino = prueba.aEstrellaGeo(A,C);
+        System.out.println("");
+        System.out.println("El camino por recorrer es: ");
+        if (camino.isEmpty()){
+            System.out.println("No existe camino.");
+        }
+        else {
+            for(Estacion path : camino){
+                System.out.println(path.getNombre());
+            }
+        }
+        
         
         /* 
         //PRUEBA 2

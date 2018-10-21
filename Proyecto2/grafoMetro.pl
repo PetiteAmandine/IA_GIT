@@ -3,6 +3,7 @@
 :-dynamic via/3.
 :-dynamic f/2.
 :-dynamic papa/2.
+:-dynamic visitados/1.
 
 %"Clase" Estacion
 %estacion(nombre,latitud,longitud,distAcc,costoTot)
@@ -25,6 +26,9 @@ f(d,inf).
 f(e,inf).
 %papa(E1,E2) indica que se llego a E1 por E2
 
+%Obtiene F asocidada
+obtieneF(E,Res):-
+    findall(Val,f(E,Val),[Res|_]).
 %Obtiene datos de estacion
 obtieneDatosEst(E,XH):-
     findall([La,Lo,D,C],estacion(E,La,Lo,D,C),[XH|_]).
@@ -57,6 +61,7 @@ via(e,c,15).
 %Obtiene distancia entre 2 estaciones
 getDistancia(E1,E2,XH):-
     findall(P,via(E1,E2,P),[XH|_]).
+getEstD([ViaH|_],ViaH):-!.
 %-------------------------------------------------------
 
 %"Clase grafo"
@@ -105,43 +110,54 @@ menorLista([HijosH|HijosT],Menor,Actual,Estacion):-
     menorLista(HijosT,Menor,Actual,Estacion).
 
 %A*
-%trataSubsecuentes(Subsecuentes,Visitados,OpenListT,Candidatos)
-trataSubsecuentes([],_,Candidatos,Candidatos):-!.
-trataSubsecuentes([SubsecuentesH|SubsecuentesT],Visitados,OpenListT,Candidatos):-
-    not(member(SubsecuentesH,Visitados)),
-
+%visitado(Estacion)
+visitado(Estacion):-
+    findall(Est,visitados(Estacion),Res),
+    member(Est,Res).
+%obtieneCamino(Actual,Destino,Camino)
+%Disque backtrackea desde el destino hasta el origen
+obtieneCamino(Actual,Actual,[Actual|_]):-!.
+obtieneCamino(Actual,Destino,[CaminoH|CaminoT]):-
+    findall(Padre,papa(Destino,Padre),[CaminoH|_]),
+    obtieneCamino(Actual,CaminoH,CaminoT).
+%trataSubsecuentes(Actual,Destino,Subsecuentes,Visitados,OpenListT,Candidatos)
+%Disque revisa si cada hijo de actual tiene menor F
+trataSubsecuentes(_,_,[],Candidatos,Candidatos):-!.
+trataSubsecuentes(Actual,Destino,[SubsecuentesH|SubsecuentesT],OpenListT,Candidatos):-
+    getEstD(SubsecuentesH,EstD),
+    not(visitado(EstD)),
+    distHaversine(EstD,Destino,H),
+    getDistancia(Actual,EstD,GInc),
+    getDistanciaAcum(Actual,GAcu),
+    G is GAcu + GInc,
+    F is G + H,
+    obtieneF(EstD,Val),
+    F < Val -> (retract(f(EstD,_)),
+                assert(f(EstD,F)),
+                getLatitud(EstD,Lat),
+                getLongitud(EstD,Long),
+                retract(estacion(EstD,_,_,_,_)),
+                assert(estacion(EstD,Lat,Long,G,F)),
+                assert(papa(EstD,Actual)),
+                append(OpenListT,EstD,Nueva),
+                trataSubsecuentes(Actual,Destino,SubsecuentesT,Nueva,Candidatos));
+    trataSubsecuentes(Actual,Destino,SubsecuentesT,OpenListT,Candidatos).
 %aEstrellaGeo(Origen,Destino,OpenList,Camino)
 aEstrellaGeo(Origen,Destino,Camino):-
     getCostoTotal(Origen,CT),
     assert(f(Origen,CT)),
     OpenList = [Origen],
-    aEstrellaGeo(Origen,Destino,OpenList,[],Camino).
-aEstrellaGeo(_,_,[],_,[]):-!.
-aEstrellaGeo(_,Destino,[OpenListH|_],Visitados,Camino):-
-    not(member(OpenListH,Visitados)),
-    append(Visitados,OpenListH),
+    aEstrellaGeo(Origen,Destino,OpenList,Camino).
+aEstrellaGeo(_,_,[],[]):-!.
+aEstrellaGeo(_,Destino,[OpenListH|_],Camino):-
+    not(visitado(OpenListH)),
     OpenListH == Destino,
-    append(Camino,OpenListH,Camino).
-aEstrellaGeo(Origen,Destino,[OpenListH|OpenListT],Visitados,Camino):-
-    not(member(OpenListH,Visitados)),
-    append(Visitados,OpenListH),
+    obtieneCamino(OpenListH,Destino,Camino).
+aEstrellaGeo(Origen,Destino,[OpenListH|OpenListT],Camino):-
+    not(visitado(OpenListH)),
+    assert(visitados(OpenListH)),
     OpenListH \== Destino,
     conexiones(OpenListH,Subsecuentes),
-    trataSubsecuentes(Subsecuentes,Visitados,OpenListT,Candidatos),
-    aEstrellaGeo(Origen,Destino,Candidatos,Visitados,Camino).
-
-%aEstrella(Origen,Destino,Seleccion,Candidatos,Camino)
-aEstrella(_,_,_,[],[]):-!.
-aEstrella(Origen,Destino,Seleccion,_,Camino):-
-    conexiones(Origen,Hijos),
-    menorLista(Hijos,Estacion),
-    Estacion == Destino,
-    append(Seleccion,Destino,Camino).
-aEstrella(Origen,Destino,Seleccion,Candidatos,Camino):-
-    conexiones(Origen,Hijos),
-    menorLista(Hijos,Estacion),
-    Estacion \== Destino,
-    append(Seleccion,Estacion,L1),
-    delete(Candidatos,Estacion,L2),
-    aEstrella(Estacion,Destino,L1,L2,Camino).
+    trataSubsecuentes(OpenListH,Destino,Subsecuentes,OpenListT,Candidatos),
+    aEstrellaGeo(Origen,Destino,Candidatos,Camino).
 
