@@ -105,7 +105,7 @@ public class MainMetro {
         //System.out.print(metroCDMX.toString());*/
         
         
-        //PRUEBA1
+        /*//PRUEBA1
         Estacion A = new Estacion("A",0,0);
         Estacion B = new Estacion("B",0,2);
         Estacion C = new Estacion("C",0,4);
@@ -126,22 +126,8 @@ public class MainMetro {
         prueba.agregaVia(A, D, 23);
         prueba.agregaVia(B, D, 2);
         prueba.agregaVia(B, C, 20);
-        prueba.agregaVia(C, E, 15);
+        prueba.agregaVia(C, E, 15);*/        
         
-        ArrayList<Estacion> camino = prueba.aEstrellaGeo(A,C);
-        System.out.println("");
-        System.out.println("El camino por recorrer es: ");
-        if (camino.isEmpty()){
-            System.out.println("No existe camino.");
-        }
-        else {
-            for(Estacion path : camino){
-                System.out.println(path.getNombre());
-            }
-        }
-        
-        
-        /* 
         //PRUEBA 2
         Estacion e1 = new Estacion("e1",0,0);
         Estacion e2 = new Estacion("e2",-1,-1);
@@ -177,7 +163,19 @@ public class MainMetro {
         prueba.agregaVia(e6, e8, 13);
         prueba.agregaVia(e7, e8, 6);
         prueba.agregaVia(e3, e6, 11);
-        */
+        
+        ArrayList<Estacion> camino = prueba.aEstrellaGeo(e6,e1);
+        System.out.println("");
+        System.out.println("El camino por recorrer es: ");
+        if (camino.isEmpty()){
+            System.out.println("No existe camino.");
+        }
+        else {
+            for(Estacion path : camino){
+                System.out.println(path.getNombre());
+            }
+        }
+        
         
     }
     
