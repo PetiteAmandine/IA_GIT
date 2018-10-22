@@ -236,12 +236,6 @@ imprimeCamino([CaminoH|CaminoT]):-
     imprimeCamino(CaminoT).
 %aEstrellaGeo(Origen,Destino,OpenList,Camino)
 aEstrellaGeo(Origen,Destino):-
-    %retract(visitados(_)),
-    retract(papa(_,_)),
-    retract(estacion(_)),
-    retract(estacion(_,_,_,_,_)),
-    retract(via(_,_,_)),
-    retract(f(_,_)),
     cargaDatos,
     getCostoTotal(Origen,CT),
     assert(f(Origen,CT)),

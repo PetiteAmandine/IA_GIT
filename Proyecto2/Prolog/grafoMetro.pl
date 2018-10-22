@@ -238,6 +238,7 @@ imprimeCamino([CaminoH|CaminoT]):-
 aEstrellaGeo(Origen,Destino):-
     cargaDatos,
     getCostoTotal(Origen,CT),
+    retract(f(Origen,_)),
     assert(f(Origen,CT)),
     OpenList = [Origen],
     aEstrellaGeo(Origen,Destino,OpenList,Camino),
