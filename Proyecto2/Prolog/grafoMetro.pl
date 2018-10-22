@@ -84,6 +84,36 @@ f(e6,inf).
 f(e7,inf).
 f(e8,inf).
 
+rows_to_lists(Rows, Lists):-
+  maplist(row_to_list, Rows, Lists).
+row_to_list(Row, List):-
+  Row =..[row|List].
+get_rows_data(Archivo,Lists):-
+    csv_read_file(Archivo, Rows, []),
+    rows_to_lists(Rows, Lists).
+
+escribeEstaciones([]):-!.
+escribeEstaciones([[Nombre|[Latitud|[Longitud|[DistAcum|[CostoTot|_]]]]]|ListsT]):-
+    assert(estacion(Nombre)),
+    assert(estacion(Nombre,Latitud,Longitud,DistAcum,CostoTot)),
+    assert(f(Nombre,inf)),
+    escribeEstaciones(ListsT).
+
+escribeVias([]):-!.
+escribeVias([[E1|[E2|[D|_]]]|ListsT]):-
+  assert(via(E1,E2,D)),
+  assert(via(E2,E1,D)),
+  escribeVias(ListsT).
+
+cargaDatos:-
+    ArchivoE = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto2/Prolog/estaciones.csv',
+    get_rows_data(ArchivoE,Estaciones),
+    escribeEstaciones(Estaciones),
+    ArchivoV = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto2/Prolog/vias.csv',
+    get_rows_data(ArchivoV,Vias),
+    escribeVias(Vias).
+
+
 %papa(E1,E2) indica que se llego a E1 por E2
 
 %Obtiene F asocidada
@@ -198,14 +228,22 @@ trataSubsecuentes(Actual,Destino,[SubsecuentesH|SubsecuentesT],OpenList,Candidat
                 append(OpenList,[EstD],Nueva),
                 trataSubsecuentes(Actual,Destino,SubsecuentesT,Nueva,Candidatos));
     trataSubsecuentes(Actual,Destino,SubsecuentesT,OpenList,Candidatos).
+%Imprime camino
+imprimeCamino([]):-!.
+imprimeCamino([CaminoH|CaminoT]):-
+    write(CaminoH),
+    nl,
+    imprimeCamino(CaminoT).
 %aEstrellaGeo(Origen,Destino,OpenList,Camino)
-aEstrellaGeo(Origen,Destino,CaminoFinal):-
+aEstrellaGeo(Origen,Destino):-
+    cargaDatos,
     getCostoTotal(Origen,CT),
     assert(f(Origen,CT)),
     OpenList = [Origen],
     aEstrellaGeo(Origen,Destino,OpenList,Camino),
     invierte(Camino,Aux),
-    append(Aux,[Destino],CaminoFinal).
+    append(Aux,[Destino],CaminoFinal),
+    imprimeCamino(CaminoFinal).
 aEstrellaGeo(_,_,[],[]):-!.
 aEstrellaGeo(Origen,Destino,OpenList,Camino):-
     menorLista(OpenList,Actual),

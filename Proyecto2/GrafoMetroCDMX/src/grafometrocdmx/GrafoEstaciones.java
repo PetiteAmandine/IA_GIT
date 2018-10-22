@@ -82,15 +82,15 @@ public class GrafoEstaciones {
         long2 = destino.getLongitud();
         lat1 = actual.getLatitud();
         lat2 = destino.getLatitud();
-        //double c = Math.PI/180;
-        //double d = (2*6367.45*Math.asin(Math.sqrt(Math.pow(Math.sin(c*(lat2-lat1)/2),2)+Math.cos(c*lat1)*Math.cos(c*lat2)*Math.pow(Math.sin(c*(long2-long1)/2),2))));
-        double dLat = Math.toRadians(lat2-lat1);
+        /*double dLat = Math.toRadians(lat2-lat1);
         double dLong = Math.toRadians(long2-long1);
         lat1 = Math.toRadians(lat1);
         lat2 = Math.toRadians(lat2);
         double a = haversin(dLat)+Math.cos(lat1)*Math.cos(lat2)*haversin(dLong);
         double c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double d = 6371*c;
+        double d = 6371*c;*/
+        double c = Math.PI/180;
+        double d = (2*6367.45*Math.asin(Math.sqrt(Math.pow(Math.sin(c*(lat2-lat1)/2),2)+Math.cos(c*lat1)*Math.cos(c*lat2)*Math.pow(Math.sin(c*(long2-long1)/2),2))));
         return d*1000;
     }
     private double distVias(Estacion est1, Estacion est2){
@@ -111,21 +111,6 @@ public class GrafoEstaciones {
             distances.put(estaciones[i], Double.POSITIVE_INFINITY);
         }
         return distances;
-    }
-    private double calculaF(Estacion actual, Estacion destino, Estacion destinoFinal){
-        ArrayList<Vias> aux = lineas.get(actual.getId());
-        double f = 0, g = 0, h = 0;
-        for(int i = 0; i < aux.size(); i++){
-            g = actual.getDistAcum();   
-            if(aux.get(i).getEstD().equals(destino)){
-                g = g + aux.get(i).getDistancia();
-                h = distHaversine(destino,destinoFinal);
-                f = g + h;
-                //System.out.println(actual.getNombre()+"-->"+destino.getNombre()+": g="+g+", h="+h+" f="+f);
-                break;
-            }
-        }
-        return f;
     }
     private PriorityQueue<Estacion> initQueue() {
         return new PriorityQueue<>(10, new Comparator<Estacion>() {
@@ -172,6 +157,7 @@ public class GrafoEstaciones {
                         double gInc = distVias(actual,elemento.getEstD());
                         double g = gInc + actual.getDistAcum();
                         double f = g + h;
+                        System.out.println(elemento.getEstD().getNombre()+"-->"+destino.getNombre()+":"+h);
                         if(f < efes.get(elemento.getEstD())){
                             efes.put(elemento.getEstD(), f);
                             elemento.getEstD().setCostoTotal(f);

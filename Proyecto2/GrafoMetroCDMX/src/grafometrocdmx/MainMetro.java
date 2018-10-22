@@ -13,7 +13,7 @@ public class MainMetro {
 
     public static void main(String[] args) {
         
-        /*String csvFile = "lineasmetro.csv";
+        String csvFile = "lineasmetro.csv";
         BufferedReader br;
         String fila;
         ArrayList<Estacion> estaciones = new ArrayList<Estacion>(); 
@@ -102,7 +102,7 @@ public class MainMetro {
             }
         }
         
-        //System.out.print(metroCDMX.toString());*/
+        //System.out.print(metroCDMX.toString());
         
         
         /*//PRUEBA1
@@ -128,7 +128,7 @@ public class MainMetro {
         prueba.agregaVia(B, C, 20);
         prueba.agregaVia(C, E, 15);*/        
         
-        //PRUEBA 2
+        /*//PRUEBA 2
         Estacion e1 = new Estacion("e1",0,0);
         Estacion e2 = new Estacion("e2",-1,-1);
         Estacion e3 = new Estacion("e3",-1,1);
@@ -174,9 +174,8 @@ public class MainMetro {
             for(Estacion path : camino){
                 System.out.println(path.getNombre());
             }
-        }
-        
-        
+        }*/
+       
     }
     
 }

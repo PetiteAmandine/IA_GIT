@@ -13,11 +13,27 @@ estacion(b).
 estacion(c).
 estacion(d).
 estacion(e).
+estacion(e1).
+estacion(e2).
+estacion(e3).
+estacion(e4).
+estacion(e5).
+estacion(e6).
+estacion(e7).
+estacion(e8).
 estacion(a,0,0,0,0).
 estacion(b,0,2,0,0).
 estacion(c,0,4,0,0).
 estacion(d,1,1,0,0).
 estacion(e,1,3,0,0).
+estacion(e1,0,0,0,0).
+estacion(e2,-1,-1,0,0).
+estacion(e3,-1,1,0,0).
+estacion(e4,0,1,0,0).
+estacion(e5,1,1,0,0).
+estacion(e6,1,2,0,0).
+estacion(e7,1,-1,0,0).
+estacion(e8,2,0,0,0).
 %via(origen,destino,peso)
 via(a,b,20).
 via(b,a,20).
@@ -29,32 +45,6 @@ via(b,c,20).
 via(c,b,20).
 via(c,e,15).
 via(e,c,15).
-%f(Est,Dist). mapea una estacion a un valor de f
-f(a,inf).
-f(b,inf).
-f(c,inf).
-f(d,inf).
-f(e,inf).
-
-%EJEMPLO2
-%estaciones
-estacion(e1).
-estacion(e2).
-estacion(e3).
-estacion(e4).
-estacion(e5).
-estacion(e6).
-estacion(e7).
-estacion(e8).
-estacion(e1,0,0,0,0).
-estacion(e2,-1,-1,0,0).
-estacion(e3,-1,1,0,0).
-estacion(e4,0,1,0,0).
-estacion(e5,1,1,0,0).
-estacion(e6,1,2,0,0).
-estacion(e7,1,-1,0,0).
-estacion(e8,2,0,0,0).
-%vias
 via(e1,e2,10).
 via(e2,e1,10).
 via(e1,e3,15).
@@ -79,7 +69,12 @@ via(e7,e8,6).
 via(e8,e7,6).
 via(e3,e6,11).
 via(e6,e3,11).
-%efes
+%f(Est,Dist). mapea una estacion a un valor de f
+f(a,inf).
+f(b,inf).
+f(c,inf).
+f(d,inf).
+f(e,inf).
 f(e1,inf).
 f(e2,inf).
 f(e3,inf).
@@ -88,6 +83,36 @@ f(e5,inf).
 f(e6,inf).
 f(e7,inf).
 f(e8,inf).
+
+rows_to_lists(Rows, Lists):-
+  maplist(row_to_list, Rows, Lists).
+row_to_list(Row, List):-
+  Row =..[row|List].
+get_rows_data(Archivo,Lists):-
+    csv_read_file(Archivo, Rows, []),
+    rows_to_lists(Rows, Lists).
+
+escribeEstaciones([]):-!.
+escribeEstaciones([[Nombre|[Latitud|[Longitud|[DistAcum|[CostoTot|_]]]]]|ListsT]):-
+    assert(estacion(Nombre)),
+    assert(estacion(Nombre,Latitud,Longitud,DistAcum,CostoTot)),
+    assert(f(Nombre,inf)),
+    escribeEstaciones(ListsT).
+
+escribeVias([]):-!.
+escribeVias([[E1|[E2|[D|_]]]|ListsT]):-
+  assert(via(E1,E2,D)),
+  assert(via(E2,E1,D)),
+  escribeVias(ListsT).
+
+cargaDatos:-
+    ArchivoE = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto2/Prolog/estaciones.csv',
+    get_rows_data(ArchivoE,Estaciones),
+    escribeEstaciones(Estaciones),
+    ArchivoV = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto2/Prolog/vias.csv',
+    get_rows_data(ArchivoV,Vias),
+    escribeVias(Vias).
+
 
 %papa(E1,E2) indica que se llego a E1 por E2
 
@@ -203,14 +228,28 @@ trataSubsecuentes(Actual,Destino,[SubsecuentesH|SubsecuentesT],OpenList,Candidat
                 append(OpenList,[EstD],Nueva),
                 trataSubsecuentes(Actual,Destino,SubsecuentesT,Nueva,Candidatos));
     trataSubsecuentes(Actual,Destino,SubsecuentesT,OpenList,Candidatos).
+%Imprime camino
+imprimeCamino([]):-!.
+imprimeCamino([CaminoH|CaminoT]):-
+    write(CaminoH),
+    nl,
+    imprimeCamino(CaminoT).
 %aEstrellaGeo(Origen,Destino,OpenList,Camino)
-aEstrellaGeo(Origen,Destino,CaminoFinal):-
+aEstrellaGeo(Origen,Destino):-
+    %retract(visitados(_)),
+    retract(papa(_,_)),
+    retract(estacion(_)),
+    retract(estacion(_,_,_,_,_)),
+    retract(via(_,_,_)),
+    retract(f(_,_)),
+    cargaDatos,
     getCostoTotal(Origen,CT),
     assert(f(Origen,CT)),
     OpenList = [Origen],
     aEstrellaGeo(Origen,Destino,OpenList,Camino),
     invierte(Camino,Aux),
-    append(Aux,[Destino],CaminoFinal).
+    append(Aux,[Destino],CaminoFinal),
+    imprimeCamino(CaminoFinal).
 aEstrellaGeo(_,_,[],[]):-!.
 aEstrellaGeo(Origen,Destino,OpenList,Camino):-
     menorLista(OpenList,Actual),
