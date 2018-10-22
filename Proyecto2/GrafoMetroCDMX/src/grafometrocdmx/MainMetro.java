@@ -164,7 +164,7 @@ public class MainMetro {
         prueba.agregaVia(e7, e8, 6);
         prueba.agregaVia(e3, e6, 11);
         
-        ArrayList<Estacion> camino = prueba.aEstrellaGeo(e6,e1);
+        ArrayList<Estacion> camino = prueba.aEstrellaGeo(e8,e1);
         System.out.println("");
         System.out.println("El camino por recorrer es: ");
         if (camino.isEmpty()){
