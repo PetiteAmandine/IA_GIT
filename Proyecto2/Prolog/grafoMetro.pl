@@ -106,10 +106,10 @@ escribeVias([[E1|[E2|[D|_]]]|ListsT]):-
   escribeVias(ListsT).
 
 cargaDatos:-
-    ArchivoE = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto2/Prolog/estaciones.csv',
+    ArchivoE = 'C:/Users/usuario/Downloads/Proyecto2/Prolog/estaciones.csv',
     get_rows_data(ArchivoE,Estaciones),
     escribeEstaciones(Estaciones),
-    ArchivoV = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto2/Prolog/vias.csv',
+    ArchivoV = 'C:/Users/usuario/Downloads/Proyecto2/Prolog/vias.csv',
     get_rows_data(ArchivoV,Vias),
     escribeVias(Vias).
 
@@ -236,6 +236,12 @@ imprimeCamino([CaminoH|CaminoT]):-
     imprimeCamino(CaminoT).
 %aEstrellaGeo(Origen,Destino,OpenList,Camino)
 aEstrellaGeo(Origen,Destino):-
+    retractall(estacion(_)),
+    retractall(estacion(_,_,_,_,_)),
+    retractall(f(_,_)),
+    retractall(visitados(_)),
+    retractall(papa(_,_)),
+    retractall(via(_,_,_)),
     cargaDatos,
     getCostoTotal(Origen,CT),
     retract(f(Origen,_)),
