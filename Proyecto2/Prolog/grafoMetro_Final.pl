@@ -298,13 +298,15 @@ imprimeCamino([CaminoH|CaminoT]):-
 
 %Prepara para A*
 /*
-Reestablece los valores de la base de conocimiento para los predicados de estacion, via,
-papa, visitados, y f. Utilizando la funcion auxiliar cargaDatos, agrega a la base de
-conocimiento las estaciones, sus coordenadas geograficas, el valor inicial para su distancia
-acumulada y el costo total. Agrega la estacion origen a la lista abierta que contiene las
-estaciones por explorar y actualiza su costo total. Manda a llamar el metodo que implementa A*,
-el cual devuelve el camino por recorrer e imprime el resultado utilizando la funcion auxiliar
-imprimeCamino.
+Reestablece los valores de la base de conocimiento para los predicados de estacion,
+via, papa, visitados, y f. Verifica que las estaciones existan, y
+utilizando la funcion auxiliar cargaDatos, agrega a la base de
+conocimiento las estaciones, sus coordenadas geograficas, el valor
+inicial para su distancia acumulada y el costo total. Agrega la estacion
+origen a la lista abierta que contiene las estaciones por explorar y
+actualiza su costo total. Manda a llamar el metodo que implementa A*, el
+cual devuelve el camino por recorrer e imprime el resultado utilizando
+la funcion auxiliar imprimeCamino.
 */
 aEstrellaGeo(Origen,Destino):-
     retractall(estacion(_)),
@@ -314,6 +316,10 @@ aEstrellaGeo(Origen,Destino):-
     retractall(papa(_,_)),
     retractall(via(_,_,_)),
     cargaDatos,
+    findall(Est,estacion(Origen),XH),
+    member(Est,XH),
+    findall(Est,estacion(Destino),YH),
+    member(Est,YH),
     getCostoTotal(Origen,CT),
     retract(f(Origen,_)),
     assert(f(Origen,CT)),

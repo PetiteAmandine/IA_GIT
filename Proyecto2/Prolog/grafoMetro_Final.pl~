@@ -175,7 +175,6 @@ escribeVias([[E1|[E2|[D|_]]]|ListsT]):-
 El predicado visitados de la forma
 visitados(estacion)
 indica que una estacion ya fue visitada en el recorrido actual del metro
-
 */
 
 %Entrega en X una lista de las conexiones de la estacion Ori
@@ -315,6 +314,10 @@ aEstrellaGeo(Origen,Destino):-
     retractall(papa(_,_)),
     retractall(via(_,_,_)),
     cargaDatos,
+    findall(Est,estacion(Origen),XH),
+    member(Est,XH),
+    findall(Est,estacion(Destino),YH),
+    member(Est,YH),
     getCostoTotal(Origen,CT),
     retract(f(Origen,_)),
     assert(f(Origen,CT)),
