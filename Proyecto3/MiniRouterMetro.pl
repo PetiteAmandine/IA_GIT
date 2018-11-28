@@ -12,7 +12,7 @@ Los siguientes predicados de la base de conocimientos seran modificados durante
 tiempo de ejecucion para cargar datos y casos y para A*:
 */
 :-dynamic conexion/5.
-:-dynamic caso/5.
+:-dynamic caso/3.
 %---------------------------------------------------------------------------------
 
 %----------------------------Funcionalidad Auxiliar-------------------------------
@@ -65,7 +65,7 @@ escribeConexiones([[Sector1|[Sector2|[Estacion1|[Estacion2|[SectorInt|_]]]]]|Lis
 
 % -----------------------------------Casos----------------------------------------
 % Un caso se define de la siguiente manera:
-% caso(estOri, sector1,estDest, sector2, camino)
+% caso(estOri,estDest,camino)
 % y almacena un camino conocido entre dos estaciones.
 % ---------------------------------------------------------------------------------
 
@@ -98,8 +98,8 @@ menorCamDes([CamH|CamT],Menor,Actual,Cam,Dest):-
 % creaCaso y lo agrega a la base de conocimientos.
 buscaCaso(EstOri, EstDest, X):-
     EstOri == EstDest -> X = [EstOri], !;
-    findall(Camino, caso(EstOri,_,EstDest,_,Camino),[X|_]) -> !;
-    findall(Camino, caso(EstDest,_,EstOri,_,Camino),[Aux|_]) -> invierte(Aux,X);
+    findall(Camino, caso(EstOri,EstDest,Camino),[X|_]) -> !;
+    findall(Camino, caso(EstDest,EstOri,Camino),[Aux|_]) -> invierte(Aux,X),!;
     creaCaso(EstOri, EstDest, X),
     assert(caso(EstOri,EstDest,X)).
 
