@@ -1,11 +1,8 @@
 %Programa para calcular la ruta optima entre dos estaciones del metro
 %de la Ciudad de Mexico aplicando el algoritmo de busqueda A*.
 %Autores: Amanda Velasco CU: 154415 Email: am_tuti@hotmail.com
-%         Octavio Ordaz  CU:158525  Email: octavio.ordaz13@gmail.com
-%Fecha: 25 de octubre de 2018
-%Nota: Para ejecutar el programa con valores distintos a los default
-%del metro, simplemente modificar las rutas de ArchivoE y ArchivoV en
-%la funcion cargaDatos.
+%         Octavio Ordaz  CU: 158525 Email: octavio.ordaz13@gmail.com
+%Fecha: 4 de diciembre de 2018
 
 %-----------------------------Predicados Dinamicos--------------------------------
 /*
@@ -13,7 +10,7 @@ Los siguientes predicados de la base de conocimientos seran modificados durante
 tiempo de ejecucion para cargar datos y para A*:
 */
 :-dynamic estacion/1.
-:-dynamic estacion/7.
+:-dynamic estacion/6.
 :-dynamic via/3.
 :-dynamic f/2.
 :-dynamic papa/2.
@@ -21,39 +18,8 @@ tiempo de ejecucion para cargar datos y para A*:
 %---------------------------------------------------------------------------------
 
 %----------------------------Funcionalidad Auxiliar-------------------------------
-%Lee datos del csv y los transforma a filas
-/*
-Son tres funciones que trabajan en conjunto:
--get_rows_data: Utiliza una función propia de SWI Prolog que le permite
-acceder a la ruta del archivo y poner cada fila separada en una
-estructura llamada Rows, los corchetes vacíos indican que las opciones
-son las que vienen por defecto.
--rows_to_list: Para cada una de las Rows que genero la funcion
-anterior, las convierte en un mapa donde crea un conjunto de listas que
-contienen los datos de cada estacion.
--row_to_list: Para el conjunto de listas que devolvió la
-funcion anterior, crea una lista diferente de Prolog para cada estacion
-que esta en el csv.
-*/
-rows_to_lists(Rows, Lists):-
-  maplist(row_to_list, Rows, Lists).
-row_to_list(Row, List):-
-  Row =..[row|List].
-get_rows_data(Archivo,Lists):-
-    csv_read_file(Archivo, Rows, []),
-    rows_to_lists(Rows, Lists).
-
-%Invierte el contenido de una lista X en otra lista Res
-/*
-Toma la cabeza de una lista y guarda el elemento, una vez que la lista
-queda vacia añade en orden inverso (los pone en la cola) dentro de una
-lista que sirve como resultado.
-*/
-invierte(X,Res):-
-    invierte(X,[],Res).
-invierte([],Y,Y):-!.
-invierte([XH|XT],Y,Res):-
-    invierte(XT,[XH|Y],Res).
+%Incluye archivo de funciones comunes
+:-['Auxiliares.pl'].
 
 % Carga los datos de nombre, latitud, longitud y demás a la base de
 % conocimiento para cada una de las estaciones.
@@ -62,18 +28,14 @@ Lee datos de dos archivos csv, uno que contiene a las estaciones y
 otro que contiene a las vias, los convierte a listas y los agrega a la
 base de conocimientos.
 */
-cargaDatos:-
+cargaDatosA:-
     ArchivoE = 'C:/Users/velasam/Documents/ITAM/7mo Semestre/IA/Proyecto3/Prolog/estaciones.csv',
     get_rows_data(ArchivoE,Estaciones),
     escribeEstaciones(Estaciones),
     ArchivoV = 'C:/Users/velasam/Documents/ITAM/7mo Semestre/IA/Proyecto3/Prolog/vias.csv',
     get_rows_data(ArchivoV,Vias),
     escribeVias(Vias).
-
-%Define la funcion haversine y entrega el valor en H
-haversine(X,H):-
-    H is sin(X/2)**2.
-%-----------------------------------------------------------------------------------
+% -----------------------------------------------------------------------------------
 
 %-------------------------------Estaciones/Nodos------------------------------------
 /*
@@ -84,8 +46,8 @@ Una estacion se define de dos maneras.
 recorrido desde un origen dado hasta dicha estacion (g), el costo
 total (f), tanto en vias como en distancia sobre el globo terraqueo, en
 que se ha incurrido para llegar desde un origen dado hasta dicha
-estacion, y el sector y subsector al que pertenece la estacion:
-estacion(nombre,latitud,longitud,distAcum,costoTot)
+estacion, y el sector al que pertenece la estacion:
+estacion(nombre,latitud,longitud,distAcum,costoTot,sector)
 
 El costo total de una estacion (f) se encuentra mapeado a la estacion de la
 siguiente manera:
@@ -105,7 +67,7 @@ obtieneF(E,Res):-
 %Obtiene una lista en XH con los datos de la estacion E
 %de la forma XH = [latitud, longitud, distancia_acumulada, costo_total]
 obtieneDatosEst(E,XH):-
-    findall([La,Lo,D,C,Se,Su],estacion(E,La,Lo,D,C,Se,Su),[XH|_]).
+    findall([La,Lo,D,C,S],estacion(E,La,Lo,D,C,S),[XH|_]).
 
 %Obtiene en X la latitud de la estacion E
 getLatitud(E,X):-
@@ -127,11 +89,6 @@ getCostoTotal(E,X):-
 getSector(E,X):-
     obtieneDatosEst(E,[_|[_|[_|[_|[X|_]]]]]).
 
-%Obtiene en X el subsector al que pertenece una estacion E
-getSubsector(E,X):-
-    obtieneDatosEst(E,[_|[_|[_|[_|[_|[X|_]]]]]]).
-
-
 %Agrega las estaciones de una lista a la base de conocimientos
 /*
 Los datos leidos del archivo csv se encuentran en listas con la estructura:
@@ -141,9 +98,9 @@ definiciones de estacion asi como el costo total f el cual es inicializado
 en +infinito.
 */
 escribeEstaciones([]):-!.
-escribeEstaciones([[Nombre|[Latitud|[Longitud|[DistAcum|[CostoTot|[Sector|[Subsector|_]]]]]]]|ListsT]):-
+escribeEstaciones([[Nombre|[Latitud|[Longitud|[DistAcum|[CostoTot|[Sector|_]]]]]]|ListsT]):-
     assert(estacion(Nombre)),
-    assert(estacion(Nombre,Latitud,Longitud,DistAcum,CostoTot,Sector,Subsector)),
+    assert(estacion(Nombre,Latitud,Longitud,DistAcum,CostoTot,Sector)),
     assert(f(Nombre,inf)),
     escribeEstaciones(ListsT).
 %---------------------------------------------------------------------------------
@@ -195,36 +152,6 @@ de X es X = [estacion1,peso1,...,estacionN,pesoN].
 conexiones(Ori,X):-
     findall([Dest,P],via(Ori,Dest,P),X).
 
-% Calcula en Har la distancia entre dos estaciones usando la formula del
-% haversine
-/*
-Funcion utilizada para calcular el valor heuristico h donde
-h es la distancia sobre el globo terraqueo entre una estacion actual
-arbitraria y la estacion destino a la que se quiere buscar una solucion.
-Dadas dos estaciones Actual y Destino accede a sus componentes de
-longitud y latitud para aplicar la formula del haversine y entregar el
-resultado en Har.
-*/
-distHaversine(Actual,Destino,Har):-
-    getLongitud(Actual,LongA),
-    getLongitud(Destino,LongD),
-    getLatitud(Actual,X),
-    LatA is X*pi/180,
-    getLatitud(Destino,Y),
-    LatD is Y*pi/180,
-    DifLon is (LongD-LongA)*pi/180,
-    DifLat is LatD-LatA,
-    haversine(DifLat,H1),
-    haversine(DifLon,H2),
-    C1 is cos(LatA),
-    C2 is cos(LatD),
-    A is H1+C1*C2*H2,
-    R1 is sqrt(A),
-    R2 is sqrt(1-A),
-    C is atan2(R1,R2)*2,
-    D is 6371*C,
-    Har is D*1000.
-
 %Obtiene la estacion con menor costo total
 /*
 Dada una lista de estaciones obtiene para cada una su costo total, y de manera
@@ -273,8 +200,8 @@ sobre las vias desde el origen hasta el hijo actual, y verifica si es
 menor al valor guardado. En este caso, actualiza su valor, y añade la
 estacion a la lista de candidatos.
 */
-trataSubsecuentes(_,_,[],Candidatos,Candidatos):-!.
-trataSubsecuentes(Actual,Destino,[SubsecuentesH|SubsecuentesT],OpenList,Candidatos):-
+trataSubsecuentes(_,_,[],Candidatos,Candidatos,_):-!.
+trataSubsecuentes(Actual,Destino,[SubsecuentesH|SubsecuentesT],OpenList,Candidatos,Sec):-
     getEstD(SubsecuentesH,EstD),
     not(visitado(EstD)),
     distHaversine(EstD,Destino,H),
@@ -287,23 +214,13 @@ trataSubsecuentes(Actual,Destino,[SubsecuentesH|SubsecuentesT],OpenList,Candidat
                 assert(f(EstD,F)),
                 getLatitud(EstD,Lat),
                 getLongitud(EstD,Long),
-                retract(estacion(EstD,_,_,_,_)),
-                assert(estacion(EstD,Lat,Long,G,F)),
+                retract(estacion(EstD,_,_,_,_,_)),
+                assert(estacion(EstD,Lat,Long,G,F,Sec)),
                 assert(papa(EstD,Actual)),
                 append(OpenList,[EstD],Nueva),
-                trataSubsecuentes(Actual,Destino,SubsecuentesT,Nueva,Candidatos));
-    trataSubsecuentes(Actual,Destino,SubsecuentesT,OpenList,Candidatos).
+                trataSubsecuentes(Actual,Destino,SubsecuentesT,Nueva,Candidatos,Sec));
+    trataSubsecuentes(Actual,Destino,SubsecuentesT,OpenList,Candidatos,Sec).
 
-%Imprime camino
-/*
-Dada una lista de estaciones que representan el camino final desde el origen hasta
-el destino, imprime una a una las estaciones.
-*/
-imprimeCamino([]):-!.
-imprimeCamino([CaminoH|CaminoT]):-
-    write(CaminoH),
-    nl,
-    imprimeCamino(CaminoT).
 
 %Prepara para A*
 /*
@@ -317,17 +234,18 @@ imprimeCamino.
 */
 aEstrellaGeo(Origen,Destino, CaminoFinal):-
     retractall(estacion(_)),
-    retractall(estacion(_,_,_,_,_)),
+    retractall(estacion(_,_,_,_,_,_)),
     retractall(f(_,_)),
     retractall(visitados(_)),
     retractall(papa(_,_)),
     retractall(via(_,_,_)),
-    cargaDatos,
+    cargaDatosA,
     getCostoTotal(Origen,CT),
     retract(f(Origen,_)),
     assert(f(Origen,CT)),
     OpenList = [Origen],
-    aEstrellaGeo(Origen,Destino,OpenList,Camino),
+    getSector(Origen,Sec),
+    aEstrellaGeo(Origen,Destino,OpenList,Camino,Sec),
     invierte(Camino,Aux),
     append(Aux,[Destino],CaminoFinal).
 
@@ -342,15 +260,15 @@ calcula su costo total para elegir la opcion de menor costo en terminos de la he
 ademas, vuelve a llamar al metodo para ejecutarlo sobre la nueva lista de candidatos. Todo
 esto se repite hasta que no queda ningun candidato (i.e., no tiene solucion) o llego al destino.
 */
-aEstrellaGeo(_,_,[],[]):-!.
-aEstrellaGeo(Origen,Destino,OpenList,Camino):-
+aEstrellaGeo(_,_,[],[],_):-!.
+aEstrellaGeo(Origen,Destino,OpenList,Camino,Sec):-
     menorLista(OpenList,Actual),
     not(visitado(Actual)),
     assert(visitados(Actual)),
     Actual \== Destino -> (delete(OpenList,Actual,OpenListN),
                            conexiones(Actual,Subsecuentes),
-                           trataSubsecuentes(Actual,Destino,Subsecuentes,OpenListN,Candidatos),
-                           aEstrellaGeo(Origen,Destino,Candidatos,Camino));
+                           trataSubsecuentes(Actual,Destino,Subsecuentes,OpenListN,Candidatos,Sec),
+                           aEstrellaGeo(Origen,Destino,Candidatos,Camino,Sec));
     obtieneCamino(Origen,Destino,Camino).
 %---------------------------------------------------------------------------------
 %---------------------------------------------------------------------------------
