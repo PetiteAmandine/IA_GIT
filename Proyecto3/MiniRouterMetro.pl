@@ -22,6 +22,9 @@ tiempo de ejecucion para cargar datos y casos y para A*:
 %Incluye archivo de A*
 :-['grafoMetro_Final.pl'].
 
+%
+%:-['list_util.pl'].
+
 % Carga los datos de las estaciones y lee datos de un archivo csv que
 % contiene informacion sobre como se interconectan los sectores del mapa
 % jerarquizado del metro.
@@ -70,15 +73,18 @@ escribeConexiones([[Sector1|[Sector2|[Estacion1|[Estacion2|[SectorInt|_]]]]]|Lis
 % ---------------------------------------------------------------------------------
 
 % -----------------------------------Router----------------------------------------
-% split_At
-split_at_(Rest, 0, [], Rest) :- !.
+split_at(N,Xs,Take,Rest) :-
+    split_at_(Xs,N,Take,Rest).
+
+split_at_(Rest, 0, [], Rest) :- !. % optimization
 split_at_([], N, [], []) :-
+    % cannot optimize here because (+, -, -, -) would be wrong,
+    % which could possibly be a useful generator.
     N > 0.
 split_at_([X|Xs], N, [X|Take], Rest) :-
     N > 0,
     succ(N0, N),
     split_at_(Xs, N0, Take, Rest).
-
 %Depura el camino
 cuentaPos([],_,1):-!.
 cuentaPos([CaminoH|_],CaminoH,1):-!.
