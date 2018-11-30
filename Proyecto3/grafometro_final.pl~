@@ -29,10 +29,10 @@ otro que contiene a las vias, los convierte a listas y los agrega a la
 base de conocimientos.
 */
 cargaDatosA:-
-    ArchivoE = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto3/estaciones.csv',
+    ArchivoE = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto3/Prolog/estaciones.csv',
     get_rows_data(ArchivoE,Estaciones),
     escribeEstaciones(Estaciones),
-    ArchivoV = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto3/vias.csv',
+    ArchivoV = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto3/Prolog/vias.csv',
     get_rows_data(ArchivoV,Vias),
     escribeVias(Vias).
 % -----------------------------------------------------------------------------------

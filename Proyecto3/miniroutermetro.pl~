@@ -71,13 +71,13 @@ escribeConexiones([[Sector1|[Sector2|[Estacion1|[Estacion2|[SectorInt|_]]]]]|Lis
 
 % -----------------------------------Router----------------------------------------
 % split_At
-split_at_(Rest, 0, [], Rest) :- !.
-split_at_([], N, [], []) :-
+split_at(Rest, 0, [], Rest) :- !.
+split_at([], N, [], []) :-
     N > 0.
-split_at_([X|Xs], N, [X|Take], Rest) :-
+split_at([X|Xs], N, [X|Take], Rest) :-
     N > 0,
     succ(N0, N),
-    split_at_(Xs, N0, Take, Rest).
+    split_at(Xs, N0, Take, Rest).
 
 %Depura el camino
 cuentaPos([],_,1):-!.

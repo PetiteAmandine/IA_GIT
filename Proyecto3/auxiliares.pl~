@@ -43,7 +43,7 @@ invierte([XH|XT],Y,Res):-
 
 %Elimina el ultimo elemento de la lista
 eliminaUltimo([XH|XT], Y) :-
-  eliminaUltimo(XT, Y, XH).
+  eliminaUltimo(XH, Y, XT).
 eliminaUltimo([], [], _).
 eliminaUltimo([XH|XT], [YH|YT], YH) :-
    eliminaUltimo(XT, YT, XH).
