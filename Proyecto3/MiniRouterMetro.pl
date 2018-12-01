@@ -13,6 +13,7 @@ tiempo de ejecucion para cargar datos y casos y para A*:
 */
 :-dynamic conexion/5.
 :-dynamic caso/3.
+:-dynamic frec/1.
 %---------------------------------------------------------------------------------
 
 %----------------------------Funcionalidad Auxiliar-------------------------------
@@ -28,7 +29,11 @@ tiempo de ejecucion para cargar datos y casos y para A*:
 % Carga los datos de las estaciones y lee datos de un archivo csv que
 % contiene informacion sobre como se interconectan los sectores del mapa
 % jerarquizado del metro.
-iniciaRouter:-
+iniciaRouter(Frec):-
+    retractall(caso(_,_,_)),
+    retractall(frec(_)),
+    retractall(conexion(_,_,_,_,_)),
+    assert(frec(Frec)),
     cargaDatosA,
     ArchivoC = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto3/conexiones_sector.csv',
     get_rows_data(ArchivoC,Conexiones),
@@ -73,18 +78,6 @@ escribeConexiones([[Sector1|[Sector2|[Estacion1|[Estacion2|[SectorInt|_]]]]]|Lis
 % ---------------------------------------------------------------------------------
 
 % -----------------------------------Router----------------------------------------
-split_at(N,Xs,Take,Rest) :-
-    split_at_(Xs,N,Take,Rest).
-
-split_at_(Rest, 0, [], Rest) :- !. % optimization
-split_at_([], N, [], []) :-
-    % cannot optimize here because (+, -, -, -) would be wrong,
-    % which could possibly be a useful generator.
-    N > 0.
-split_at_([X|Xs], N, [X|Take], Rest) :-
-    N > 0,
-    succ(N0, N),
-    split_at_(Xs, N0, Take, Rest).
 %Depura el camino
 cuentaPos([],_,1):-!.
 cuentaPos([CaminoH|_],CaminoH,1):-!.
@@ -117,6 +110,15 @@ menorCamDes([CamH|CamT],Menor,Actual,Cam,Dest):-
   Val < Menor -> menorCamDes(CamT,Val,CamH,Cam,Dest);
   menorCamDes(CamT,Menor,Actual,Cam,Dest).
 
+%Funcion que agrega el conocimiento
+agregaConocimiento(CaminoFinal,F):-
+    split_at(F,CaminoFinal,[TakeH|TakeT],Res),
+    Res \== [] -> devuelveUltimo(TakeT,EstDest), assert(caso(TakeH,EstDest,[TakeH|TakeT])), agregaConocimiento(Res,F);
+    split_at(F,CaminoFinal,[TakeH|TakeT],_),
+    length([TakeH|TakeT],Tam),
+    Tam == F -> devuelveUltimo(TakeT,EstDest), assert(caso(TakeH,EstDest,[TakeH|TakeT]));
+    !.
+
 % Dadas una estacion origen y una estacion final, busca si en la base de
 % conocimientos existe algun camino que conecte a ambas estaciones en
 % cualquier direccion. Si existe, lo devuelve en X (de ser necesario
@@ -127,15 +129,18 @@ buscaCaso(EstOri, EstDest, X):-
     findall(Camino, caso(EstOri,EstDest,Camino),[X|_]) -> !;
     findall(Camino, caso(EstDest,EstOri,Camino),[Aux|_]) -> invierte(Aux,X),!;
     findall(Camino, caso(EstOri,_,Camino),CasoOri),
-    CasoOri == [] -> creaCaso(EstOri, EstDest, Y), depura(Y,EstDest,X), assert(caso(EstOri,EstDest,X));
-    findall(EstSig, caso(EstOri,EstSig,_), Destinos),
+    CasoOri == [] -> creaCaso(EstOri, EstDest, Y), depura(Y,EstDest,X);
+    findall(Camino, caso(_,EstOri,Camino),CasoOri),
+    CasoOri == [] -> creaCaso(EstOri, EstDest, Y), depura(Y,EstDest,X);
+    findall(EstSig, caso(EstOri,EstSig,_), Destinos1),
+    findall(EstSig, caso(EstSig,EstOri,_), Destinos2),
+    append(Destinos1,Destinos2,Destinos),
     menorCamDes(Destinos,Siguiente,EstDest),
     buscaCaso(Siguiente,EstDest,Aux),
     findall(Camino, caso(EstOri,Siguiente,Camino), [Creo|_]),
     eliminaUltimo(Creo,Creemos),
     append(Creemos,Aux,Y),
-    depura(Y,EstDest,X),
-    assert(caso(EstOri,EstDest,X)).
+    depura(Y,EstDest,X).
 
 creaCaso(EstOri, EstDest, X):-
     getSector(EstOri,S1),
@@ -166,8 +171,16 @@ creaCaso(EstOri, EstDest, X):-
 % Dadas una estacion origen y una destino, imprime el camino mas corto
 % que las conecta.
 router(EstOri,EstDest):-
-   buscaCaso(EstOri,EstDest,X),
-   imprimeCamino(X).
+    findall(Est,estacion(EstOri),XH),
+    member(Est,XH),
+    findall(Est,estacion(EstDest),YH),
+    member(Est,YH),
+    buscaCaso(EstOri,EstDest,X),
+    findall(Frec, frec(Frec), [F|_]),
+    agregaConocimiento(X,F),
+    imprimeCamino(X),
+    length(X,Tam),
+    Tam > 1 -> assert(caso(EstOri,EstDest,X));fail.
 %---------------------------------------------------------------------------------
 
 

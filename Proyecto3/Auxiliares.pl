@@ -41,12 +41,35 @@ invierte([],Y,Y):-!.
 invierte([XH|XT],Y,Res):-
     invierte(XT,[XH|Y],Res).
 
+%split_at
+split_at(N,Xs,Take,Rest) :-
+    split_at_(Xs,N,Take,Rest).
+
+split_at_(Rest, 0, [], Rest) :- !. % optimization
+split_at_([], N, [], []) :-
+    % cannot optimize here because (+, -, -, -) would be wrong,
+    % which could possibly be a useful generator.
+    N > 0.
+split_at_([X|Xs], N, [X|Take], Rest) :-
+    N > 0,
+    succ(N0, N),
+    split_at_(Xs, N0, Take, Rest).
+
+
 %Elimina el ultimo elemento de la lista
 eliminaUltimo([XH|XT], Y) :-
   eliminaUltimo(XT, Y, XH).
 eliminaUltimo([], [], _).
 eliminaUltimo([XH|XT], [YH|YT], YH) :-
    eliminaUltimo(XT, YT, XH).
+
+%Devuelve el ultimo elemento de la lista
+devuelveUltimo(X,Elem):-
+  length(X,Pos),
+  Pos == 0 -> !;
+  length(X,Pos),
+  NewPos is Pos - 1,
+  split_at(NewPos,X,_,[Elem|_]).
 
 %Define la funcion haversine y entrega el valor en H
 haversine(X,H):-
@@ -92,5 +115,17 @@ imprimeCamino([CaminoH|CaminoT]):-
     write(CaminoH),
     nl,
     imprimeCamino(CaminoT).
+
+%Imprime estadistica
+imprimeEst:-
+  statistics(predicates,B),
+  statistics(functors,C),
+  statistics(stack,D),
+  write('predicates: '),write(B),
+  write('functors: '),write(C),
+  write('stack: '),write(D).
+
+
+
 
 %-----------------------------------------------------------------------------------

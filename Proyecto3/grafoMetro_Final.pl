@@ -29,6 +29,9 @@ otro que contiene a las vias, los convierte a listas y los agrega a la
 base de conocimientos.
 */
 cargaDatosA:-
+    retractall(estacion(_)),
+    retractall(estacion(_,_,_,_,_,_)),
+    retractall(via(_,_,_)),
     ArchivoE = 'C:/Users/super/Documents/Documentos Escolares/ITAM/Séptimo Semestre/Inteligencia Artificial/IA_GIT/Proyecto3/estaciones.csv',
     get_rows_data(ArchivoE,Estaciones),
     escribeEstaciones(Estaciones),
@@ -232,7 +235,7 @@ estaciones por explorar y actualiza su costo total. Manda a llamar el metodo que
 el cual devuelve el camino por recorrer e imprime el resultado utilizando la funcion auxiliar
 imprimeCamino.
 */
-aEstrellaGeo(Origen,Destino, CaminoFinal):-
+aEstrellaGeo(Origen,Destino,CaminoFinal):-
     retractall(estacion(_)),
     retractall(estacion(_,_,_,_,_,_)),
     retractall(f(_,_)),
@@ -240,6 +243,10 @@ aEstrellaGeo(Origen,Destino, CaminoFinal):-
     retractall(papa(_,_)),
     retractall(via(_,_,_)),
     cargaDatosA,
+    findall(Est,estacion(Origen),XH),
+    member(Est,XH),
+    findall(Est,estacion(Destino),YH),
+    member(Est,YH),
     getCostoTotal(Origen,CT),
     retract(f(Origen,_)),
     assert(f(Origen,CT)),
