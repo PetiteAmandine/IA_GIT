@@ -23,9 +23,7 @@ tiempo de ejecucion para cargar datos y casos y para A*:
 %Incluye archivo de A*
 :-['grafoMetro_Final.pl'].
 
-%
-%:-['list_util.pl'].
-
+% Establece que la frecuencia para almacenar casos sera de Frec.
 % Carga los datos de las estaciones y lee datos de un archivo csv que
 % contiene informacion sobre como se interconectan los sectores del mapa
 % jerarquizado del metro.
@@ -46,8 +44,7 @@ iniciaRouter(Frec):-
 %La conexion puede ser de dos formas:
 % 1) mostrar si sector1 y sector2 son contiguos
 % (estacion1=estacion2=sectorInt = 0)
-% o no (estacion1=estacion2=0 y
-% sectorInt != 0)
+% o no (estacion1=estacion2=0 y sectorInt != 0)
 % 2) mostrar a traves de cuales estaciones se conectan los sectores
 % contiguos
 % (estacion1 != 0 y estacion2 != 0 y sectorInt = 0)
@@ -75,15 +72,33 @@ escribeConexiones([[Sector1|[Sector2|[Estacion1|[Estacion2|[SectorInt|_]]]]]|Lis
 % Un caso se define de la siguiente manera:
 % caso(estOri,estDest,camino)
 % y almacena un camino conocido entre dos estaciones.
+
+% La frecuencia con la que se almacenan los casos se define en el predicado frec.
 % ---------------------------------------------------------------------------------
 
 % -----------------------------------Router----------------------------------------
-%Depura el camino
+%Calcula el indice en el que se encuentra un elemento Target dentro de una lista
+/*
+ Se va descabezando la lista hasta llegar a una lista vacia. Ahi se inicializa
+ un contador en 1 (porque los indices empiezan en 1) y con cada elemento que se
+ devuelve y que no sea igual al Target se va incrementando. Si Target no esta
+ contenido en la lista, el valor que se devuelve es la longitud de la lista + 1.
+ Si Target esta mas de una vez en la lista, se devuelve el indice de la primera
+ ocurrencia.
+*/
 cuentaPos([],_,1):-!.
 cuentaPos([CaminoH|_],CaminoH,1):-!.
 cuentaPos([_|CaminoT],Target,Pos):-
     cuentaPos(CaminoT,Target,NewPos),
     Pos is NewPos + 1.
+
+%Depura el camino
+/*
+ Dado un Camino y un Destino, usa cuentaPos para calcular en que indice esta
+ Destino dentro de Camino. Con split_at parte el Camino en dicho indice para 
+ en Res devolver el take, es decir, el primer tramo del camino en que se 
+ pasa por Destino.
+*/
 depura(Camino,Destino,Res):-
     cuentaPos(Camino,Destino,Pos),
     split_at(Pos,Camino,Res,_).
@@ -91,17 +106,36 @@ depura(Camino,Destino,Res):-
 
 % Obtiene en Res el sector intermedio por el que se debe pasar para
 % llegar de SecOri a SecDest
+/*
+ Busca en la base de conocimientos todos los hechos de conexion con el formato
+ estacion1 = estacion2 = 0 para asi extraer en Val el sector que conecta al
+ origen con el destino.
+*/
 getSectorInt(SecOri, SecDest, Res):-
     findall(Val, conexion(SecOri, SecDest, 0, 0, Val), [Res|_]).
 
 % Elige en Cam de entre las rutas designadas que conectan sectores
 % aquella que acerca mas al destino final
+/*
+ Busca en la base de conocimientos todas las conexiones con el formato
+ estacion1 != 0 y estacion2 != 0 para asi sacar las estaciones del 
+ sector origen que se pueden tomar para pasar al sector destino. Pone
+ todos los resultados en una lista y con menorCamDes elige aquel que
+ este mas cercano a la estacion destino.
+*/
 eligeCamDes(SecOri, EstDest, SecDest, Cam):-
     findall(Dest, conexion(SecOri, SecDest,Dest,_, _), Res),
     menorCamDes(Res,Cam,EstDest).
 
 % De una lista de estaciones devuelve en Cam el elemento que tenga
 % menor distancia haversine a un destino dado
+/*
+ Dada una lista de estaciones obtiene para cada una su distancia haversine
+ a un destino dado, y de manera secuencial compara si el valor obtenido 
+ es menor al valor menor. En caso de ser cierto, actualiza el menor valor 
+ y avanza sobre los demas valores. Se detiene cuando no quedan mas estaciones 
+ por analizar.
+*/
 menorCamDes([CamH|CamT],Cam,Dest):-
   menorCamDes([CamH|CamT],inf,CamH,Cam,Dest).
 menorCamDes([],_,X,X,_):-!.
@@ -111,6 +145,14 @@ menorCamDes([CamH|CamT],Menor,Actual,Cam,Dest):-
   menorCamDes(CamT,Menor,Actual,Cam,Dest).
 
 %Funcion que agrega el conocimiento
+/*
+ Dado un camino final que se encontro como solucion, aplica secuencialmente 
+ split_at tomando una frecuencia F como indice de particion y almacenando 
+ cada take como un caso con sus estaciones origen y destino propias. 
+ Este proceso continua mientras la lista rest no este vacia. Una vez que 
+ rest quede vacia, se debe analizar la longitud de take para, en caso de 
+ cumplir con el tamaño deseado F, agregarlo tambien como caso.
+*/
 agregaConocimiento(CaminoFinal,F):-
     split_at(F,CaminoFinal,[TakeH|TakeT],Res),
     Res \== [] -> devuelveUltimo(TakeT,EstDest), assert(caso(TakeH,EstDest,[TakeH|TakeT])), agregaConocimiento(Res,F);
@@ -119,11 +161,22 @@ agregaConocimiento(CaminoFinal,F):-
     Tam == F -> devuelveUltimo(TakeT,EstDest), assert(caso(TakeH,EstDest,[TakeH|TakeT]));
     !.
 
-% Dadas una estacion origen y una estacion final, busca si en la base de
-% conocimientos existe algun camino que conecte a ambas estaciones en
-% cualquier direccion. Si existe, lo devuelve en X (de ser necesario
-% antes invierte el camino). De lo contrario, lo calcula en X mediante
-% creaCaso y lo agrega a la base de conocimientos.
+%Busca entre los casos almacenados aquellos que le puedan servir para 
+% resolver el problema dado. Llama a otra funcion si no pudo encontrar
+% casos utiles.
+/*
+ Dadas una estacion origen y una estacion final, busca si en la base de
+ conocimientos existe algun camino que conecte a ambas estaciones en
+ cualquier direccion. Si existe, lo devuelve en X (de ser necesario
+ antes invierte el camino). De lo contrario, busca todos los casos que le
+ puedan servir como subcasos (en cualquier direccion). Si no encuentra, 
+ se remite a creaCaso y depura el camino encontrado en X. Si si encuentra,
+ elige al caso cuya estacion siguiente lo acerque mas al destino y busca
+ un caso recursivamente a partir de la estacion siguiente. Al regresar, 
+ aplica eliminaUltimo para borrar repetidos entre el camino que va de la
+ estacion origen a la siguiente, junta ambos caminos, depura el camino
+ resultante y lo devuelve en X.
+*/
 buscaCaso(EstOri, EstDest, X):-
     EstOri == EstDest -> X = [EstOri], !;
     findall(Camino, caso(EstOri,EstDest,Camino),[X|_]) -> !;
@@ -142,6 +195,20 @@ buscaCaso(EstOri, EstDest, X):-
     append(Creemos,Aux,Y),
     depura(Y,EstDest,X).
 
+%Dadas una estacion origen y una destino, utiliza el razonamiento basado
+% en modelos para reducir el problema a nivel sector y resolverlo ya sea
+% buscando casos o con A*.
+/*
+ Obtiene los sectores a los que pertenecen la estacion origen y la destino.
+ Si pertenecen al mismo, se realiza A* y se devuelve el resultado en X.
+ Si no pertenecen al mismo, se verifica si hay un sector intermedio entre
+ ellos. Si no hay, se busca entre los caminos designados cual acerca mas
+ al destino y se aplica buscaCaso para encontrar una ruta entre el origen
+ y la estacion designada y una entre la estacion siguiente a la designada
+ y el destino. Se juntan ambos caminos y se devuelven en X. Si si hay un
+ sector intermedio, se procede de la misma forma solamente que encontrando
+ tres caminos en vez de dos.
+*/
 creaCaso(EstOri, EstDest, X):-
     getSector(EstOri,S1),
     getSector(EstDest,S2),
@@ -168,8 +235,13 @@ creaCaso(EstOri, EstDest, X):-
                    append(Aux,CInt3,X)).
 
 %Funcion que llama el usuario
-% Dadas una estacion origen y una destino, imprime el camino mas corto
-% que las conecta.
+/*
+ Dadas una estacion origen y una destino, verifica que las estaciones
+ esten en la base de conocimientos. En caso positivo, imprime el camino
+ mas corto que las conecta. Si el camino encontrado tiene longitud
+ mayor a 1, se almacena completo a la base de casos y se llama a 
+ agregaConocimiento para almacenar los subcasos con la frecuencia dada.
+*/
 router(EstOri,EstDest):-
     findall(Est,estacion(EstOri),XH),
     member(Est,XH),

@@ -41,14 +41,16 @@ invierte([],Y,Y):-!.
 invierte([XH|XT],Y,Res):-
     invierte(XT,[XH|Y],Res).
 
-%split_at
+%Divide una lista X en dos listas a partir de un indice
+/*
+ Toma la cabeza de una lista X y la pone en otra lista Take mientras el 
+ contador no haya superado al indice solicitado. Una vez superado, los 
+ elementos restantes se colocan en una lista Rest.
+*/
 split_at(N,Xs,Take,Rest) :-
     split_at_(Xs,N,Take,Rest).
-
-split_at_(Rest, 0, [], Rest) :- !. % optimization
+split_at_(Rest, 0, [], Rest) :- !.
 split_at_([], N, [], []) :-
-    % cannot optimize here because (+, -, -, -) would be wrong,
-    % which could possibly be a useful generator.
     N > 0.
 split_at_([X|Xs], N, [X|Take], Rest) :-
     N > 0,
@@ -57,13 +59,22 @@ split_at_([X|Xs], N, [X|Take], Rest) :-
 
 
 %Elimina el ultimo elemento de la lista
+/*
+ Agrega todos los elementos de una lista X a otra lista Y siempre y cuando
+ el elemento actual no sea el ultimo de X.
+*/
 eliminaUltimo([XH|XT], Y) :-
   eliminaUltimo(XT, Y, XH).
 eliminaUltimo([], [], _).
 eliminaUltimo([XH|XT], [YH|YT], YH) :-
    eliminaUltimo(XT, YT, XH).
 
-%Devuelve el ultimo elemento de la lista
+%Devuelve el ultimo elemento de una lista
+/*
+ Encuentra la longitud de una lista y si esta es mayor a 0 hace split_at de
+ la lista tomando como indice la longitud-1. En Rest queda el ultimo elemento
+ de la lista original y se devuelve.
+*/
 devuelveUltimo(X,Elem):-
   length(X,Pos),
   Pos == 0 -> !;
@@ -115,17 +126,4 @@ imprimeCamino([CaminoH|CaminoT]):-
     write(CaminoH),
     nl,
     imprimeCamino(CaminoT).
-
-%Imprime estadistica
-imprimeEst:-
-  statistics(predicates,B),
-  statistics(functors,C),
-  statistics(stack,D),
-  write('predicates: '),write(B),
-  write('functors: '),write(C),
-  write('stack: '),write(D).
-
-
-
-
 %-----------------------------------------------------------------------------------
